@@ -1,0 +1,50 @@
+:root {
+  --antiphon-font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', ui-monospace, monospace;
+}
+
+/* Tema geçişinde yumuşak renk animasyonu — YALNIZCA geçiş anında (App.vue sınıfı ekler/kaldırır),
+   böylece hover/etkileşim geçişleri etkilenmez. */
+.antiphon-theme-transition,
+.antiphon-theme-transition *,
+.antiphon-theme-transition *::before,
+.antiphon-theme-transition *::after {
+  transition:
+    background-color 0.22s ease,
+    color 0.22s ease,
+    border-color 0.22s ease !important;
+}
+
+.antiphon-mono {
+  font-family: var(--antiphon-font-mono);
+  font-variant-ligatures: none;
+}
+
+.antiphon-method-chip {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  min-width: 64px;
+  justify-content: center;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 128, 128, 0.35);
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 128, 128, 0.55);
+}
+
+.antiphon-kbd {
+  font-family: var(--antiphon-font-mono);
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: rgba(128, 128, 128, 0.18);
+  border: 1px solid rgba(128, 128, 128, 0.3);
+}

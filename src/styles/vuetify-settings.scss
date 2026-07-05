@@ -1,0 +1,13 @@
+// Vuetify SASS ayar dosyası — vite-plugin-vuetify `styles.configFile` ile kullanılır.
+// Stilleri SASS kaynağından derler; kullanılmayan stilleri derleme-zamanında ELER (CSS tree-shaking)
+// ve Vuetify SASS değişkenlerini özelleştirmeye izin verir (enterprise theming, tek merkez).
+//
+// $color-pack: false — Material Design renk yardımcı sınıflarını (.bg-red-lighten-1,
+//   .text-blue-darken-2 … yüzlerce sınıf, ~700 varyant) ÜRETME. Uygulama bunları hiç
+//   kullanmıyor (yalnızca semantik text-primary/error/… kullanılır → bunlar korunur).
+//
+// NOT: $utilities: false KULLANMAYIN — uygulama d-flex/pa-*/ga-*/text-* utility'lerini
+// yoğun kullanıyor; kapatmak tüm layout'u bozar.
+@forward 'vuetify/settings' with (
+  $color-pack: false
+);
