@@ -30,6 +30,15 @@ export default {
     emptyHint: 'Başlamak için bir klasör seçin',
     noCollections: 'Henüz koleksiyon yok',
     newCollectionTitle: 'Yeni Koleksiyon',
+    search: 'Ara…',
+    filter: 'Filtre',
+    clearFilter: 'Filtreyi temizle',
+    add: 'Yeni ekle',
+    noMatches: 'Eşleşen öğe yok',
+    searchCollections: 'Koleksiyonlarda ara…',
+    searchEnvironments: 'Ortamlarda ara…',
+    searchHistory: 'Geçmişte ara…',
+    activeEnvironment: 'Aktif ortam',
     newMenu: {
       groupAi: 'Yapay Zeka',
       groupRequests: 'İstek Türleri',
@@ -130,7 +139,19 @@ export default {
   },
   request: {
     urlPlaceholder: 'İstek URL\'sini girin veya bir cURL yapıştırın',
-    tabs: { params: 'Parametreler', headers: 'Başlıklar', body: 'Gövde', auth: 'Kimlik Doğrulama', scripts: 'Script\'ler', docs: 'Dokümantasyon' }
+    tabs: { params: 'Parametreler', headers: 'Başlıklar', body: 'Gövde', auth: 'Kimlik Doğrulama', scripts: 'Script\'ler', docs: 'Dokümantasyon', settings: 'Ayarlar' }
+  },
+  // Koleksiyon, klasör ve istek editörlerinin ortak kimlik doğrulama paneli
+  auth: {
+    type: 'Kimlik doğrulama türü',
+    username: 'Kullanıcı adı',
+    password: 'Parola',
+    token: 'Token',
+    secret: 'Secret (HS256)',
+    header: 'Header',
+    queryParam: 'Query Param',
+    inherit: 'Üst öğeden devral',
+    inheritHint: 'Kimlik doğrulama üst klasörden/koleksiyondan devralınır; hiçbir üst öğede tanımlı değilse uygulanmaz.'
   },
   response: {
     tabs: { body: 'Gövde', headers: 'Başlıklar', cookies: 'Çerezler', timing: 'Zamanlama', tests: 'Testler' },

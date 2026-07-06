@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { computed, ref, watch } from 'vue'
 import { useGitStore } from '../../stores/git'
 import { useWorkspaceStore } from '../../stores/workspace'
@@ -36,7 +37,7 @@ watch(
   async (root) => {
     if (!root) return
     gitStore.refresh(root)
-    const override = await window.antiphon.getWorkspaceSettingsOverride(root)
+    const override = await ipc.getWorkspaceSettingsOverride(root)
     workspaceGitIdentity.value = override.gitIdentity ?? null
   },
   { immediate: true }
@@ -171,7 +172,7 @@ function statusColor(status: string): string {
 
           <v-divider />
           <div class="pa-3">
-            <v-textarea v-model="commitMessage" label="Commit mesajı" rows="2" density="compact" hide-details />
+            <v-textarea v-model="commitMessage" label="Commit mesajı" placeholder="Değişiklikleri kısaca özetleyin…" rows="2" density="compact" hide-details />
             <v-btn
               class="mt-2 text-none"
               color="primary"

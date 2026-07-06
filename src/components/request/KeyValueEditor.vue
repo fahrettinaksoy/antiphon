@@ -24,19 +24,75 @@ ensureTrailingRow()
 </script>
 
 <template>
-  <div class="antiphon-kv-grid">
-    <div v-for="(row, index) in rows" :key="index" class="d-flex align-center ga-2 py-1">
-      <v-checkbox-btn v-model="row.enabled" density="compact" />
-      <v-text-field v-model="row.key" placeholder="key" density="compact" hide-details class="antiphon-mono" />
-      <v-text-field
-        v-model="row.value"
-        placeholder="value"
-        density="compact"
-        hide-details
-        class="antiphon-mono"
-        @update:model-value="ensureTrailingRow"
-      />
-      <v-btn icon="mdi-close" size="x-small" variant="text" :disabled="index === rows.length - 1" @click="removeRow(index)" />
-    </div>
-  </div>
+  <!-- MD data table: başlık satırlı tablo; hücre içi düzenleme "plain" alanlarla yapılır. -->
+  <v-table density="compact" class="antiphon-kv-table">
+    <thead>
+      <tr>
+        <th class="antiphon-kv-table__check"></th>
+        <th>Key</th>
+        <th>Value</th>
+        <th class="antiphon-kv-table__actions"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="(row, index) in rows" :key="index">
+        <td class="antiphon-kv-table__check">
+          <v-checkbox-btn v-model="row.enabled" density="compact" />
+        </td>
+        <td>
+          <v-text-field
+            v-model="row.key"
+            placeholder="key"
+            variant="plain"
+            density="compact"
+            hide-details
+            class="antiphon-mono"
+            @update:model-value="ensureTrailingRow"
+          />
+        </td>
+        <td>
+          <v-text-field
+            v-model="row.value"
+            placeholder="value"
+            variant="plain"
+            density="compact"
+            hide-details
+            class="antiphon-mono"
+            @update:model-value="ensureTrailingRow"
+          />
+        </td>
+        <td class="antiphon-kv-table__actions">
+          <v-btn icon="mdi-close" size="x-small" variant="text" :disabled="index === rows.length - 1" @click="removeRow(index)" />
+        </td>
+      </tr>
+    </tbody>
+  </v-table>
 </template>
+
+<style scoped>
+/* Tonal kartların içinde tablo kendi 'surface' arka planını getirmesin. */
+.antiphon-kv-table {
+  background: transparent;
+}
+.antiphon-kv-table__check {
+  width: 44px;
+}
+.antiphon-kv-table__actions {
+  width: 44px;
+  text-align: right;
+}
+.antiphon-kv-table :deep(th) {
+  font-size: 11px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(var(--v-theme-on-surface), 0.6) !important;
+}
+/* Plain variant'ın varsayılan üst dolgusunu tablo satırına göre sıkılaştır. */
+.antiphon-kv-table :deep(.v-field__input) {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  min-height: 32px;
+  font-size: 13px;
+}
+</style>

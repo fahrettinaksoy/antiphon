@@ -69,21 +69,28 @@ const protocolIcon: Record<TabProtocol, string> = {
 </template>
 
 <style scoped>
+/* MD3: sekme çubuğu tonal yüzeyle (surface-light) ayrılır, sekmeler arası çizgi yok;
+   aktif sekme içerik yüzeyine bağlanır ve primary alt gösterge (indicator) taşır. */
 .antiphon-tabbar {
   height: 40px;
   overflow-x: auto;
-  border-bottom: 1px solid rgba(128, 128, 128, 0.15);
+  background: rgb(var(--v-theme-surface-light));
 }
 .antiphon-tab {
   height: 100%;
   cursor: pointer;
-  border-right: 1px solid rgba(128, 128, 128, 0.1);
   opacity: 0.7;
+  border-radius: 8px 8px 0 0;
+  transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+.antiphon-tab:hover {
+  opacity: 0.9;
+  background-color: rgba(var(--v-theme-on-surface), 0.04);
 }
 .antiphon-tab--active {
   opacity: 1;
-  background-color: rgba(128, 128, 128, 0.08);
-  border-bottom: 2px solid rgb(var(--v-theme-primary));
+  background-color: rgb(var(--v-theme-surface));
+  box-shadow: inset 0 -2px 0 rgb(var(--v-theme-primary));
 }
 .antiphon-dirty-dot {
   width: 6px;

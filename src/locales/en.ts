@@ -30,6 +30,15 @@ export default {
     emptyHint: 'Pick a folder to get started',
     noCollections: 'No collections yet',
     newCollectionTitle: 'New Collection',
+    search: 'Search…',
+    filter: 'Filter',
+    clearFilter: 'Clear filter',
+    add: 'Add new',
+    noMatches: 'No matching items',
+    searchCollections: 'Search collections…',
+    searchEnvironments: 'Search environments…',
+    searchHistory: 'Search history…',
+    activeEnvironment: 'Active environment',
     newMenu: {
       groupAi: 'AI',
       groupRequests: 'Request Types',
@@ -130,7 +139,19 @@ export default {
   },
   request: {
     urlPlaceholder: 'Enter request URL or paste a cURL command',
-    tabs: { params: 'Params', headers: 'Headers', body: 'Body', auth: 'Auth', scripts: 'Scripts', docs: 'Docs' }
+    tabs: { params: 'Params', headers: 'Headers', body: 'Body', auth: 'Auth', scripts: 'Scripts', docs: 'Docs', settings: 'Settings' }
+  },
+  // Koleksiyon, klasör ve istek editörlerinin ortak kimlik doğrulama paneli
+  auth: {
+    type: 'Auth type',
+    username: 'Username',
+    password: 'Password',
+    token: 'Token',
+    secret: 'Secret (HS256)',
+    header: 'Header',
+    queryParam: 'Query Param',
+    inherit: 'Inherit auth from parent',
+    inheritHint: 'Authorization is inherited from the parent folder/collection; if none is defined above, no auth is applied.'
   },
   response: {
     tabs: { body: 'Body', headers: 'Headers', cookies: 'Cookies', timing: 'Timing', tests: 'Tests' },

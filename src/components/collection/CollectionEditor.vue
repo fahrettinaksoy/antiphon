@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useFormat } from '../../composables/useFormat'
@@ -19,6 +20,8 @@ const workspaceStore = useWorkspaceStore()
 const environmentsStore = useEnvironmentsStore()
 
 const activeSection = ref('overview')
+// Scripts bölümündeki dikey mini-nav: Pre-request / Post-response
+const activeScript = ref<'pre' | 'post'>('pre')
 
 // Yol segmentlerinden breadcrumb + koleksiyon/klasör ayrımı.
 // Koleksiyon = çalışma alanı kökünün doğrudan çocuğu (tek segment); daha derini = klasör.
@@ -53,7 +56,7 @@ async function runCollection() {
   isRunning.value = true
   runId.value = nanoid(8)
   try {
-    await window.antiphon.runCollection(runId.value, tab.value.requestPath, workspaceStore.rootPath, environmentsStore.activeVariables)
+    await ipc.runCollection(runId.value, tab.value.requestPath, workspaceStore.rootPath, environmentsStore.activeVariables)
   } finally {
     isRunning.value = false
   }
@@ -68,7 +71,7 @@ function statusColor(result: CollectionRunResultDto): string {
 const passCount = () => results.value.filter((r) => statusColor(r) === 'success').length
 
 onMounted(() => {
-  unsubscribe = window.antiphon.onCollectionRunProgress(handleProgress)
+  unsubscribe = ipc.onCollectionRunProgress(handleProgress)
 })
 onBeforeUnmount(() => unsubscribe?.())
 </script>
@@ -103,59 +106,86 @@ onBeforeUnmount(() => unsubscribe?.())
       </v-btn>
     </div>
 
-    <v-tabs v-model="activeSection" density="compact">
+    <v-tabs v-model="activeSection" density="compact" class="px-2">
       <v-tab value="overview">{{ t('collection.tabs.overview') }}</v-tab>
       <v-tab value="auth">{{ t('collection.tabs.authorization') }}</v-tab>
       <v-tab value="scripts">{{ t('collection.tabs.scripts') }}</v-tab>
       <v-tab v-if="isCollection" value="variables">{{ t('collection.tabs.variables') }}</v-tab>
       <v-tab v-if="isCollection" value="runs">{{ t('collection.tabs.runs') }}</v-tab>
     </v-tabs>
-    <v-divider />
 
-    <!-- v-window yerine v-if: aktif olmayan CodeMirror'ın diğer sekmelere sızmasını önler. -->
+    <!-- v-window yerine v-if: aktif olmayan CodeMirror'ın diğer sekmelere sızmasını önler.
+         MD3: bölüm içerikleri çerçevesiz tonal kartlarda gruplanır. -->
     <div class="flex-grow-1 overflow-y-auto d-flex flex-column">
       <!-- Overview -->
       <div v-if="activeSection === 'overview'" class="pa-4">
-        <div class="text-caption text-medium-emphasis mb-2">{{ t('collection.descriptionLabel') }}</div>
-        <v-textarea
-          v-model="tab.description"
-          :placeholder="t('collection.descriptionPlaceholder')"
-          variant="outlined"
-          density="comfortable"
-          rows="8"
-          auto-grow
-          hide-details
-        />
+        <v-card variant="tonal" class="pa-4">
+          <div class="text-subtitle-2 mb-1">{{ t('collection.descriptionLabel') }}</div>
+          <v-textarea
+            v-model="tab.description"
+            :placeholder="t('collection.descriptionPlaceholder')"
+            density="comfortable"
+            rows="8"
+            auto-grow
+            hide-details
+          />
+        </v-card>
       </div>
 
       <!-- Authorization -->
-      <div v-else-if="activeSection === 'auth'" class="pa-4">
-        <p class="text-caption text-medium-emphasis mb-3">
-          {{ isCollection ? t('collection.authHint') : t('collection.folderAuthHint') }}
-        </p>
-        <AuthPanel
-          v-model="tab.auth"
-          :none-label="isCollection ? t('collection.noAuth') : t('collection.inheritAuth')"
-          :none-hint="isCollection ? t('collection.noAuthHint') : t('collection.inheritAuthHint')"
-        />
-        <v-divider class="my-4" />
-        <div class="text-subtitle-2 mb-2">{{ t('collection.commonHeaders') }}</div>
-        <KeyValueEditor v-model="tab.headers" />
+      <div v-else-if="activeSection === 'auth'" class="pa-4 d-flex flex-column ga-4">
+        <v-card variant="tonal" class="pa-4">
+          <p class="text-caption text-medium-emphasis mb-3">
+            {{ isCollection ? t('collection.authHint') : t('collection.folderAuthHint') }}
+          </p>
+          <AuthPanel
+            v-model="tab.auth"
+            :none-label="isCollection ? t('collection.noAuth') : t('collection.inheritAuth')"
+            :none-hint="isCollection ? t('collection.noAuthHint') : t('collection.inheritAuthHint')"
+          />
+        </v-card>
+        <v-card variant="tonal" class="pa-4">
+          <div class="text-subtitle-2 mb-2">{{ t('collection.commonHeaders') }}</div>
+          <KeyValueEditor v-model="tab.headers" />
+        </v-card>
       </div>
 
-      <!-- Scripts -->
-      <div v-else-if="activeSection === 'scripts'" class="flex-grow-1 d-flex flex-column">
-        <div class="text-caption text-medium-emphasis px-3 py-1">{{ t('collection.preRequest') }}</div>
-        <CodeMirrorEditor v-model="tab.preRequestScript" language="javascript" style="height: 45%" />
-        <v-divider />
-        <div class="text-caption text-medium-emphasis px-3 py-1">{{ t('collection.postResponse') }}</div>
-        <CodeMirrorEditor v-model="tab.testScript" language="javascript" style="height: 45%" />
+      <!-- Scripts: solda dikey nav, sağda seçili script'in tam yükseklik editörü (Postman düzeni) -->
+      <div v-else-if="activeSection === 'scripts'" class="flex-grow-1 d-flex overflow-hidden">
+        <div class="antiphon-script-nav flex-shrink-0 bg-surface-light h-100">
+          <v-list density="compact" bg-color="transparent" class="py-1">
+            <v-list-item :active="activeScript === 'pre'" rounded="lg" class="mx-1" @click="activeScript = 'pre'">
+              <v-list-item-title class="text-body-2">{{ t('collection.preRequest') }}</v-list-item-title>
+            </v-list-item>
+            <v-list-item :active="activeScript === 'post'" rounded="lg" class="mx-1" @click="activeScript = 'post'">
+              <v-list-item-title class="text-body-2">{{ t('collection.postResponse') }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </div>
+        <div class="flex-grow-1 overflow-hidden">
+          <CodeMirrorEditor
+            v-if="activeScript === 'pre'"
+            v-model="tab.preRequestScript"
+            language="javascript"
+            placeholder="İstek gönderilmeden önce çalışır — ör. pm.environment.set('token', 'abc')"
+            class="h-100"
+          />
+          <CodeMirrorEditor
+            v-else
+            v-model="tab.testScript"
+            language="javascript"
+            placeholder="Yanıt geldikten sonra çalışır — ör. pm.test('durum 200', () => pm.expect(pm.response.code).to.equal(200))"
+            class="h-100"
+          />
+        </div>
       </div>
 
       <!-- Variables -->
       <div v-else-if="activeSection === 'variables'" class="pa-4">
-        <p class="text-caption text-medium-emphasis mb-3">{{ t('collection.variablesHint') }}</p>
-        <KeyValueEditor v-model="tab.variables" />
+        <v-card variant="tonal" class="pa-4">
+          <p class="text-caption text-medium-emphasis mb-3">{{ t('collection.variablesHint') }}</p>
+          <KeyValueEditor v-model="tab.variables" />
+        </v-card>
       </div>
 
       <!-- Runs -->
@@ -171,9 +201,10 @@ onBeforeUnmount(() => unsubscribe?.())
           </v-chip>
         </div>
 
-        <v-progress-linear v-if="isRunning" :model-value="(progress.index / Math.max(progress.total, 1)) * 100" color="primary" class="mb-3" />
+        <v-progress-linear v-if="isRunning" :model-value="(progress.index / Math.max(progress.total, 1)) * 100" color="primary" rounded class="mb-3" />
 
-        <v-list v-if="results.length > 0" density="compact">
+        <v-card v-if="results.length > 0" variant="tonal" class="py-1">
+        <v-list density="compact" bg-color="transparent">
           <v-list-item v-for="result in results" :key="result.path">
             <template #prepend>
               <v-chip size="x-small" :color="statusColor(result)" variant="tonal" class="antiphon-mono mr-2" style="min-width: 46px; justify-content: center">
@@ -191,6 +222,7 @@ onBeforeUnmount(() => unsubscribe?.())
             </v-list-item-subtitle>
           </v-list-item>
         </v-list>
+        </v-card>
 
         <AppEmptyState
           v-else-if="!isRunning"
@@ -207,5 +239,8 @@ onBeforeUnmount(() => unsubscribe?.())
 <style scoped>
 .min-w-0 {
   min-width: 0;
+}
+.antiphon-script-nav {
+  width: 170px;
 }
 </style>

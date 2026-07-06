@@ -82,12 +82,11 @@ async function remove(meta: WorkspaceMetaDto) {
           v-model="search"
           :placeholder="t('workspace.searchPlaceholder')"
           density="compact"
-          variant="outlined"
           hide-details
           autofocus
           class="flex-grow-1"
         />
-        <v-btn variant="outlined" size="small" class="text-none" @click="openCreate">
+        <v-btn variant="tonal" size="small" class="text-none" @click="openCreate">
           {{ t('workspace.create') }}
         </v-btn>
       </div>

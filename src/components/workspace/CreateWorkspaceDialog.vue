@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { computed, reactive, ref, watch } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import type { CreateWorkspaceInput, WorkspaceStorageKind, WorkspaceVisibility } from '@shared/ipc-contract'
@@ -62,7 +63,7 @@ function reset() {
 }
 
 async function chooseFolder() {
-  const dir = await window.antiphon.pickDirectory()
+  const dir = await ipc.pickDirectory()
   if (dir) {
     sourceFolder.value = dir
     localMode.value = 'folder'
@@ -174,6 +175,7 @@ async function submit() {
             :hint="t('workspace.gist.tokenHint')"
             persistent-hint
             type="password"
+            placeholder="ghp_xxxxxxxxxxxxxxxx"
             class="mb-3"
           />
           <v-text-field
@@ -181,6 +183,7 @@ async function submit() {
             :label="t('workspace.gist.gistId')"
             :hint="t('workspace.gist.gistIdHint')"
             persistent-hint
+            placeholder="a1b2c3d4e5f67890abcd"
           />
         </template>
 
@@ -193,15 +196,15 @@ async function submit() {
             class="mb-3"
           />
           <div class="d-flex ga-3">
-            <v-text-field v-model="webdav.username" :label="t('workspace.webdav.username')" />
-            <v-text-field v-model="webdav.password" :label="t('workspace.webdav.password')" type="password" />
+            <v-text-field v-model="webdav.username" :label="t('workspace.webdav.username')" placeholder="user" />
+            <v-text-field v-model="webdav.password" :label="t('workspace.webdav.password')" type="password" placeholder="••••••••" />
           </div>
         </template>
 
         <!-- Görünürlük (yerel-öncelikli üründe kozmetik etiket) -->
         <label class="antiphon-field-label mt-4">{{ t('workspace.visibilityLabel') }}</label>
         <v-chip-group v-model="visibility" selected-class="text-primary" mandatory>
-          <v-chip v-for="opt in visibilityOptions" :key="opt.value" :value="opt.value" :prepend-icon="opt.icon" variant="outlined" filter>
+          <v-chip v-for="opt in visibilityOptions" :key="opt.value" :value="opt.value" :prepend-icon="opt.icon" variant="tonal" filter>
             {{ opt.title }}
           </v-chip>
         </v-chip-group>
@@ -238,20 +241,19 @@ async function submit() {
 .antiphon-cards--2 {
   grid-template-columns: repeat(2, 1fr);
 }
+/* MD3 seçilebilir kart: çerçevesiz tonal yüzey; seçili durum primary-tonal konteyner. */
 .antiphon-card {
   text-align: left;
   padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
-  background: rgba(var(--v-theme-on-surface), 0.02);
+  border-radius: 12px;
+  background: rgba(var(--v-theme-on-surface), 0.04);
   cursor: pointer;
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 .antiphon-card:hover {
-  background: rgba(var(--v-theme-on-surface), 0.05);
+  background: rgba(var(--v-theme-on-surface), 0.08);
 }
 .antiphon-card--active {
-  border-color: rgb(var(--v-theme-primary));
-  background: rgba(var(--v-theme-primary), 0.06);
+  background: rgba(var(--v-theme-primary), 0.14);
 }
 </style>

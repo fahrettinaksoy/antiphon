@@ -54,12 +54,14 @@ export default defineConfig({
         scss: { quietDeps: true, silenceDeprecations: ['import', 'global-builtin'] }
       }
     },
-    // autoImport: yalnızca şablonlarda kullanılan Vuetify bileşen/direktiflerini içe aktarır
-    // (JS tree-shaking). styles.configFile: stilleri SASS kaynağından derleyerek kullanılmayan
-    // bileşen stillerini de tree-shake eder + SASS değişken özelleştirmesi sağlar.
+    // autoImport: yalnızca şablonlarda kullanılan Vuetify bileşen/direktiflerini içe aktarır;
+    // her bileşen kendi DERLENMİŞ CSS'ini getirir (CSS tree-shaking korunur).
+    // NOT: styles.configFile (SASS kaynağından derleme) BİLİNÇLİ olarak kullanılmıyor —
+    // sanal .sass modülleri Vite'ın bağımlılık önbelleğiyle kronik 404 üretiyordu
+    // ("VBtn.sass 404" vb.); tek kazanımı $color-pack eleme optimizasyonuydu.
     plugins: [
       vue(),
-      vuetify({ autoImport: true, styles: { configFile: resolve('src/styles/vuetify-settings.scss') } })
+      vuetify({ autoImport: true })
     ]
   }
 })

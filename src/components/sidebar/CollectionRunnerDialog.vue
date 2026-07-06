@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { nanoid } from 'nanoid'
 import { useWorkspaceStore } from '../../stores/workspace'
@@ -32,7 +33,7 @@ async function run() {
   isRunning.value = true
   runId.value = nanoid(8)
   try {
-    await window.antiphon.runCollection(runId.value, props.folderPath, workspaceStore.rootPath, environmentsStore.activeVariables)
+    await ipc.runCollection(runId.value, props.folderPath, workspaceStore.rootPath, environmentsStore.activeVariables)
   } finally {
     isRunning.value = false
   }
@@ -46,7 +47,7 @@ watch(open, (isOpen) => {
 })
 
 onMounted(() => {
-  unsubscribe = window.antiphon.onCollectionRunProgress(handleProgress)
+  unsubscribe = ipc.onCollectionRunProgress(handleProgress)
 })
 onBeforeUnmount(() => unsubscribe?.())
 

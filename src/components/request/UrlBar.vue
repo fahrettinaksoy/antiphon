@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { useI18n } from '@/composables/i18n'
 import MethodSelect from './MethodSelect.vue'
 import AppLtr from '../common/AppLtr.vue'
@@ -17,7 +18,7 @@ async function handlePaste(event: ClipboardEvent) {
   if (!text.trim().toLowerCase().startsWith('curl ')) return
 
   event.preventDefault()
-  const parsed = await window.antiphon.parseCurl(text)
+  const parsed = await ipc.parseCurl(text)
   method.value = parsed.method
   url.value = parsed.url
   if (parsed.headers.length > 0) headers.value = [...headers.value, ...parsed.headers]

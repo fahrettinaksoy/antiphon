@@ -42,38 +42,40 @@ const sections = computed<{ key: SidebarSection; icon: string; label: string }[]
 </template>
 
 <style scoped>
+/* MD3 navigation rail: border yok, drawer'ın tonal yüzeyini paylaşır;
+   aktif durum sol çizgi yerine pill şeklinde tonal gösterge ile belirtilir. */
 .antiphon-activity-bar {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  width: 48px;
-  flex: 0 0 48px;
+  width: 56px;
+  flex: 0 0 56px;
   height: 100%;
-  padding-top: 4px;
-  background: rgba(var(--v-theme-surface), 1);
-  border-right: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  padding: 6px 0;
+  background: transparent;
   overflow-y: auto;
 }
 .antiphon-activity-item {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
+  height: 40px;
+  margin: 2px 8px;
   padding: 0;
   color: rgb(var(--v-theme-on-surface));
   opacity: 0.6;
   cursor: pointer;
-  border-left: 2px solid transparent;
+  border-radius: 12px;
   background: transparent;
   transition: opacity 0.15s ease, background-color 0.15s ease;
 }
 .antiphon-activity-item:hover {
   opacity: 0.9;
-  background: rgba(var(--v-theme-on-surface), 0.05);
+  background: rgba(var(--v-theme-on-surface), 0.06);
 }
 .antiphon-activity-item--active {
   opacity: 1;
-  border-left-color: rgb(var(--v-theme-primary));
+  background: rgba(var(--v-theme-primary), 0.14);
   color: rgb(var(--v-theme-primary));
 }
 </style>

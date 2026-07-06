@@ -246,6 +246,11 @@ function registerIpcHandlers(): void {
     return parseCurlCommand(command)
   })
 
+  ipcMain.handle(IpcChannels.dialogChooseFile, async () => {
+    const result = await dialog.showOpenDialog({ properties: ['openFile'] })
+    return result.canceled || result.filePaths.length === 0 ? null : result.filePaths[0]
+  })
+
   ipcMain.handle(IpcChannels.importPostman, async (_event, workspaceRoot: string) => {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],

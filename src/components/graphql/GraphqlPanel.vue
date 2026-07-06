@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { nanoid } from 'nanoid'
 import { buildClientSchema, getIntrospectionQuery, type GraphQLSchema, type IntrospectionQuery } from 'graphql'
@@ -34,7 +35,7 @@ async function fetchSchema() {
   if (!tab.value.url) return
   isSchemaLoading.value = true
   try {
-    const result = await window.antiphon.sendRequest({
+    const result = await ipc.sendRequest({
       id: nanoid(8),
       name: `${tab.value.name}__introspection`,
       method: 'POST',
@@ -62,7 +63,7 @@ async function executeQuery() {
     let variables: Record<string, unknown> = {}
     if (tab.value.graphqlVariables.trim()) variables = JSON.parse(tab.value.graphqlVariables)
 
-    response.value = await window.antiphon.sendRequest({
+    response.value = await ipc.sendRequest({
       id: nanoid(8),
       name: tab.value.name,
       method: 'POST',
@@ -108,11 +109,11 @@ async function startSubscription() {
   subscriptionEvents.value = []
   let variables: Record<string, unknown> = {}
   if (tab.value.graphqlVariables.trim()) variables = JSON.parse(tab.value.graphqlVariables)
-  await window.antiphon.subscribeGraphql(subscriptionConnectionId, deriveWsUrl(tab.value.url), tab.value.graphqlQuery, variables, tab.value.headers)
+  await ipc.subscribeGraphql(subscriptionConnectionId, deriveWsUrl(tab.value.url), tab.value.graphqlQuery, variables, tab.value.headers)
 }
 
 async function stopSubscription() {
-  await window.antiphon.unsubscribeGraphql(subscriptionConnectionId)
+  await ipc.unsubscribeGraphql(subscriptionConnectionId)
   isSubscribed.value = false
 }
 
@@ -126,12 +127,12 @@ async function execute() {
 }
 
 onMounted(() => {
-  unsubscribeEvents = window.antiphon.onGraphqlSubscriptionEvent(handleSubscriptionEvent)
+  unsubscribeEvents = ipc.onGraphqlSubscriptionEvent(handleSubscriptionEvent)
 })
 
 onBeforeUnmount(() => {
   unsubscribeEvents?.()
-  if (isSubscribed.value) window.antiphon.unsubscribeGraphql(subscriptionConnectionId)
+  if (isSubscribed.value) ipc.unsubscribeGraphql(subscriptionConnectionId)
 })
 </script>
 

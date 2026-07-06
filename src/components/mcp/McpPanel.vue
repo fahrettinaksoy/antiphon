@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { onBeforeUnmount, ref } from 'vue'
 import { nanoid } from 'nanoid'
 import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
@@ -32,9 +33,9 @@ async function connect() {
   try {
     if (tab.value.mcpTransport === 'stdio') {
       const [command, ...args] = tab.value.mcpCommand.trim().split(/\s+/)
-      await window.antiphon.connectMcp(connectionId, { transport: 'stdio', command, args })
+      await ipc.connectMcp(connectionId, { transport: 'stdio', command, args })
     } else {
-      await window.antiphon.connectMcp(connectionId, { transport: 'http', url: tab.value.url })
+      await ipc.connectMcp(connectionId, { transport: 'http', url: tab.value.url })
     }
     isConnected.value = true
     await refreshAll()
@@ -46,7 +47,7 @@ async function connect() {
 }
 
 async function disconnect() {
-  await window.antiphon.disconnectMcp(connectionId)
+  await ipc.disconnectMcp(connectionId)
   isConnected.value = false
   tools.value = []
   resources.value = []
@@ -55,9 +56,9 @@ async function disconnect() {
 
 async function refreshAll() {
   const [t, r, p] = await Promise.all([
-    window.antiphon.listMcpTools(connectionId).catch(() => []),
-    window.antiphon.listMcpResources(connectionId).catch(() => []),
-    window.antiphon.listMcpPrompts(connectionId).catch(() => [])
+    ipc.listMcpTools(connectionId).catch(() => []),
+    ipc.listMcpResources(connectionId).catch(() => []),
+    ipc.listMcpPrompts(connectionId).catch(() => [])
   ])
   tools.value = t
   resources.value = r
@@ -75,7 +76,7 @@ async function callTool() {
   isCallingTool.value = true
   try {
     const args = toolArgsJson.value.trim() ? JSON.parse(toolArgsJson.value) : {}
-    const result = await window.antiphon.callMcpTool(connectionId, selectedTool.value.name, args)
+    const result = await ipc.callMcpTool(connectionId, selectedTool.value.name, args)
     toolResult.value = JSON.stringify(result, null, 2)
   } catch (error) {
     toolResult.value = `Hata: ${error instanceof Error ? error.message : String(error)}`
@@ -87,7 +88,7 @@ async function callTool() {
 async function readResource(uri: string) {
   selectedResourceUri.value = uri
   try {
-    const result = await window.antiphon.readMcpResource(connectionId, uri)
+    const result = await ipc.readMcpResource(connectionId, uri)
     resourceResult.value = JSON.stringify(result, null, 2)
   } catch (error) {
     resourceResult.value = `Hata: ${error instanceof Error ? error.message : String(error)}`
@@ -95,7 +96,7 @@ async function readResource(uri: string) {
 }
 
 onBeforeUnmount(() => {
-  if (isConnected.value) window.antiphon.disconnectMcp(connectionId)
+  if (isConnected.value) ipc.disconnectMcp(connectionId)
 })
 </script>
 
@@ -109,7 +110,6 @@ onBeforeUnmount(() => {
         v-model="tab.mcpTransport"
         density="comfortable"
         color="primary"
-        variant="outlined"
         mandatory
         :disabled="isConnected"
       >

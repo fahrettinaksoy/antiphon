@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useRouter } from 'vue-router'
@@ -31,13 +32,13 @@ function showResult(kind: string, result: { importedCount: number; skipped: stri
 
 async function importPostman() {
   if (!workspaceStore.rootPath) return
-  const result = await window.antiphon.importPostmanCollection(workspaceStore.rootPath)
+  const result = await ipc.importPostmanCollection(workspaceStore.rootPath)
   showResult('Postman', result)
 }
 
 async function importOpenapi() {
   if (!workspaceStore.rootPath) return
-  const result = await window.antiphon.importOpenapiSpec(workspaceStore.rootPath)
+  const result = await ipc.importOpenapiSpec(workspaceStore.rootPath)
   showResult('OpenAPI', result)
 }
 </script>
@@ -104,8 +105,6 @@ async function importOpenapi() {
       <v-btn icon="mdi-history" variant="text" density="comfortable" size="small" :title="t('sidebar.history')" @click="uiStore.toggleHistoryDrawer" />
     </div>
 
-    <v-divider vertical inset class="mx-1" />
-
     <div class="antiphon-icon-group ml-1">
       <v-btn
         :icon="uiStore.themeName === 'antiphonDark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
@@ -149,7 +148,7 @@ async function importOpenapi() {
   letter-spacing: 0.01em;
 }
 
-/* Ortadaki arama kutusu (Postman "Search" alanı) */
+/* Ortadaki arama kutusu — MD3 search bar: çerçevesiz, tam yuvarlak, dolgulu tonal yüzey. */
 .antiphon-search {
   -webkit-app-region: no-drag;
   display: inline-flex;
@@ -157,16 +156,14 @@ async function importOpenapi() {
   gap: 8px;
   width: min(420px, 34vw);
   height: 34px;
-  padding: 0 12px;
-  border-radius: 8px;
+  padding: 0 14px;
+  border-radius: 999px;
   background: rgba(var(--v-theme-on-surface), 0.06);
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   cursor: text;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 0.15s ease;
 }
 .antiphon-search:hover {
-  background: rgba(var(--v-theme-on-surface), 0.09);
-  border-color: rgba(var(--v-theme-primary), 0.5);
+  background: rgba(var(--v-theme-on-surface), 0.1);
 }
 .antiphon-search__icon {
   opacity: 0.6;

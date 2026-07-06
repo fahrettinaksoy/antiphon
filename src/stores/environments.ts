@@ -1,3 +1,4 @@
+import { ipc } from '@/lib/ipc'
 import { defineStore } from 'pinia'
 import type { EnvironmentSummary } from '@shared/ipc-contract'
 
@@ -12,7 +13,7 @@ export const useEnvironmentsStore = defineStore('environments', {
   },
   actions: {
     async refresh(workspaceRoot: string) {
-      this.list = await window.antiphon.listEnvironments(workspaceRoot)
+      this.list = await ipc.listEnvironments(workspaceRoot)
       if (this.activeEnvironmentPath && !this.list.some((e) => e.path === this.activeEnvironmentPath)) {
         this.activeEnvironmentPath = null
         this.activeVariables = {}
@@ -24,21 +25,21 @@ export const useEnvironmentsStore = defineStore('environments', {
         this.activeVariables = {}
         return
       }
-      const env = await window.antiphon.readEnvironment(path)
+      const env = await ipc.readEnvironment(path)
       this.activeVariables = env.variables
     },
     async createEnvironment(workspaceRoot: string, name: string) {
-      const summary = await window.antiphon.createEnvironment(workspaceRoot, name)
+      const summary = await ipc.createEnvironment(workspaceRoot, name)
       await this.refresh(workspaceRoot)
       await this.selectEnvironment(summary.path)
       return summary
     },
     async updateVariables(path: string, name: string, variables: Record<string, string>) {
-      await window.antiphon.writeEnvironment(path, { schema: 1, name, variables })
+      await ipc.writeEnvironment(path, { schema: 1, name, variables })
       if (path === this.activeEnvironmentPath) this.activeVariables = variables
     },
     async deleteEnvironment(workspaceRoot: string, path: string) {
-      await window.antiphon.deleteEnvironment(path)
+      await ipc.deleteEnvironment(path)
       if (path === this.activeEnvironmentPath) await this.selectEnvironment(null)
       await this.refresh(workspaceRoot)
     }

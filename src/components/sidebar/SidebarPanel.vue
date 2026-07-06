@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useUiStore } from '../../stores/ui'
 import CollectionTree from './CollectionTree.vue'
@@ -13,18 +13,26 @@ defineEmits<{ replay: [string] }>()
 const { t } = useI18n()
 const uiStore = useUiStore()
 
-const placeholder = computed<{ icon: string; label: string } | null>(() => {
+// Henüz içeriği olmayan bölümler de standart iskeleti (başlık + arama + yeni ekle) kullanır.
+const placeholderSearch = ref('')
+
+const placeholder = computed<{ icon: string; label: string; addable: boolean } | null>(() => {
   switch (uiStore.activeSidebarSection) {
     case 'apis':
-      return { icon: 'mdi-sitemap-outline', label: t('sidebar.apis') }
+      return { icon: 'mdi-sitemap-outline', label: t('sidebar.apis'), addable: false }
     case 'mockServers':
-      return { icon: 'mdi-server-network-outline', label: t('sidebar.mockServers') }
+      return { icon: 'mdi-server-network-outline', label: t('sidebar.mockServers'), addable: true }
     case 'monitors':
-      return { icon: 'mdi-monitor-eye', label: t('sidebar.monitors') }
+      return { icon: 'mdi-monitor-eye', label: t('sidebar.monitors'), addable: false }
     default:
       return null
   }
 })
+
+// Mock Sunucular bölümünde "yeni ekle" gerçek bir eylem: mock server diyaloğunu açar.
+function handlePlaceholderAdd() {
+  if (uiStore.activeSidebarSection === 'mockServers') uiStore.mockServerDialogOpen = true
+}
 </script>
 
 <template>
@@ -33,7 +41,14 @@ const placeholder = computed<{ icon: string; label: string } | null>(() => {
     <EnvironmentsPanel v-else-if="uiStore.activeSidebarSection === 'environments'" />
     <HistoryPanel v-else-if="uiStore.activeSidebarSection === 'history'" @replay="$emit('replay', $event)" />
 
-    <SidebarSection v-else-if="placeholder" :title="placeholder.label">
+    <SidebarSection
+      v-else-if="placeholder"
+      :title="placeholder.label"
+      searchable
+      v-model:search="placeholderSearch"
+      :addable="placeholder.addable"
+      @add="handlePlaceholderAdd"
+    >
       <AppEmptyState size="compact" :icon="placeholder.icon" :text="t('sidebar.comingSoon')" />
     </SidebarSection>
   </div>

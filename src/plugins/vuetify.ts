@@ -200,12 +200,16 @@ export const vuetify = createVuetify({
     VBtnTonal: { ...BTN_BASE, variant: 'tonal' },
     VCard: { rounded: 'lg', elevation: 0 },
     VCardTonal: { rounded: 'lg', elevation: 0, variant: 'tonal' },
-    VTextField: { variant: 'outlined', density: 'compact', hideDetails: 'auto' },
-    VTextarea: { variant: 'outlined', density: 'compact', hideDetails: 'auto' },
-    VSelect: { variant: 'outlined', density: 'compact', hideDetails: 'auto' },
-    VAutocomplete: { variant: 'outlined', density: 'compact', hideDetails: 'auto' },
-    VCombobox: { variant: 'outlined', density: 'compact', hideDetails: 'auto' },
-    VTabs: { density: 'compact' },
+    // MD3: standart metin alanı "filled" — çerçeve yerine tonal dolgu + focus'ta primary alt gösterge.
+    VTextField: { variant: 'filled', density: 'compact', hideDetails: 'auto' },
+    VTextarea: { variant: 'filled', density: 'compact', hideDetails: 'auto' },
+    VSelect: { variant: 'filled', density: 'compact', hideDetails: 'auto' },
+    VAutocomplete: { variant: 'filled', density: 'compact', hideDetails: 'auto' },
+    VCombobox: { variant: 'filled', density: 'compact', hideDetails: 'auto' },
+    // MD3 segmented button: çerçevesiz tonal segmentler, aralarında ince ayraç.
+    VBtnToggle: { variant: 'tonal', divided: true, rounded: 'lg' },
+    // MD3 primary tabs: aktif sekme primary renkte metin + gösterge.
+    VTabs: { density: 'compact', color: 'primary' },
     VList: { density: 'compact' },
     VChip: { size: 'small' },
     VTooltip: { location: 'top' },

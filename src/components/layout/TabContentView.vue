@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { computed } from 'vue'
 import { watchDebounced } from '@vueuse/core'
 import UrlBar from '../request/UrlBar.vue'
@@ -32,7 +33,7 @@ async function sendActiveRequest() {
   responsesStore.setLoading(current.id)
   const startedAt = Date.now()
   try {
-    const result = await window.antiphon.sendRequest({
+    const result = await ipc.sendRequest({
       id: current.id,
       name: current.name,
       method: current.method,
@@ -41,6 +42,7 @@ async function sendActiveRequest() {
       params: current.params,
       body: current.body,
       auth: current.auth,
+      settings: current.settings,
       environmentVariables: environmentsStore.activeVariables,
       requestPath: current.requestPath ?? undefined,
       workspaceRoot: workspaceStore.rootPath ?? undefined,
@@ -129,13 +131,12 @@ defineExpose({ saveActiveTab })
         @send="sendActiveRequest"
         @save="saveActiveTab"
       />
-      <v-divider />
       <v-row no-gutters class="flex-grow-1 overflow-hidden">
         <v-col cols="6" class="h-100 overflow-hidden">
           <RequestPanel v-model="tab" />
         </v-col>
-        <v-divider vertical />
-        <v-col cols="6" class="h-100 overflow-hidden">
+        <!-- MD3: istek/yanıt ayrımı çizgiyle değil yanıt panelinin tonal yüzeyiyle yapılır. -->
+        <v-col cols="6" class="h-100 overflow-hidden bg-surface-light">
           <ResponseViewer :response="responseState.response" :is-loading="responseState.isLoading" :error="responseState.error" />
         </v-col>
       </v-row>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useWorkspaceStore } from '../../stores/workspace'
@@ -30,7 +31,7 @@ function openTab(name: string, protocol: TabProtocol) {
 
 async function importSpec() {
   if (!workspaceStore.rootPath) return
-  await window.antiphon.importOpenapiSpec(workspaceStore.rootPath)
+  await ipc.importOpenapiSpec(workspaceStore.rootPath)
 }
 
 const envDialogOpen = ref(false)

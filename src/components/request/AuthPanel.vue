@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from '@/composables/i18n'
 import type { Auth } from '@schema/request'
 
 const auth = defineModel<Auth>({ required: true })
-// 'none' seçeneği bağlama göre yeniden etiketlenebilir: klasörlerde "Üst öğeden devral".
-const props = withDefaults(defineProps<{ noneLabel?: string; noneHint?: string }>(), {
-  noneLabel: 'Yok',
-  noneHint: 'Bu istek için kimlik doğrulama uygulanmıyor.'
-})
+const { t } = useI18n()
+
+// Koleksiyon, klasör ve istek editörlerinin ORTAK paneli. 'none' seçeneği bağlama göre
+// etiketlenir: koleksiyonda "Yok" (devralacak üst öğe yok), klasör ve isteklerde varsayılan
+// "Üst öğeden devral" — runner kalıtımı (resolveInheritedSettings) gerçekte böyle çözer.
+const props = defineProps<{ noneLabel?: string; noneHint?: string }>()
+const noneTitle = computed(() => props.noneLabel ?? t('auth.inherit'))
+const noneHintText = computed(() => props.noneHint ?? t('auth.inheritHint'))
 
 const authTypes = computed(() => [
-  { title: props.noneLabel, value: 'none' },
+  { title: noneTitle.value, value: 'none' },
   { title: 'Basic Auth', value: 'basic' },
   { title: 'Bearer Token', value: 'bearer' },
   { title: 'API Key', value: 'apiKey' },
@@ -43,37 +47,36 @@ const selectedType = computed<Auth['type']>({
 
 <template>
   <div class="d-flex flex-column ga-3">
-    <v-select v-model="selectedType" label="Kimlik doğrulama türü" :items="authTypes" style="max-width: 280px" />
+    <v-select v-model="selectedType" :label="t('auth.type')" :items="authTypes" style="max-width: 280px" />
 
     <template v-if="auth.type === 'basic'">
-      <v-text-field v-model="auth.username" label="Kullanıcı adı" />
-      <v-text-field v-model="auth.password" label="Parola" type="password" />
+      <v-text-field v-model="auth.username" :label="t('auth.username')" placeholder="kullanici-adi" />
+      <v-text-field v-model="auth.password" :label="t('auth.password')" type="password" placeholder="••••••••" />
     </template>
 
     <template v-else-if="auth.type === 'bearer'">
-      <v-text-field v-model="auth.token" label="Token" class="antiphon-mono" />
+      <v-text-field v-model="auth.token" :label="t('auth.token')" placeholder="eyJhbGciOiJIUzI1NiJ9…" class="antiphon-mono" />
     </template>
 
     <template v-else-if="auth.type === 'apiKey'">
-      <v-text-field v-model="auth.key" label="Key" class="antiphon-mono" />
-      <v-text-field v-model="auth.value" label="Value" class="antiphon-mono" />
+      <v-text-field v-model="auth.key" label="Key" placeholder="X-API-Key" class="antiphon-mono" />
+      <v-text-field v-model="auth.value" label="Value" placeholder="gizli-anahtar-degeri" class="antiphon-mono" />
       <v-btn-toggle
         v-model="auth.in"
         mandatory
         color="primary"
-        variant="outlined"
         density="comfortable"
         class="align-self-start"
       >
-        <v-btn value="header">Header</v-btn>
-        <v-btn value="query">Query Param</v-btn>
+        <v-btn value="header">{{ t('auth.header') }}</v-btn>
+        <v-btn value="query">{{ t('auth.queryParam') }}</v-btn>
       </v-btn-toggle>
     </template>
 
     <template v-else-if="auth.type === 'jwt'">
-      <v-text-field v-model="auth.secret" label="Secret (HS256)" class="antiphon-mono" />
+      <v-text-field v-model="auth.secret" :label="t('auth.secret')" placeholder="gizli-imza-anahtari" class="antiphon-mono" />
     </template>
 
-    <p v-else class="text-body-2 text-medium-emphasis">{{ noneHint }}</p>
+    <p v-else class="text-body-2 text-medium-emphasis">{{ noneHintText }}</p>
   </div>
 </template>

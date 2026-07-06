@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { nanoid } from 'nanoid'
 import KeyValueEditor from '../request/KeyValueEditor.vue'
@@ -47,27 +48,27 @@ function handleEvent(event: WsEvent) {
 async function connect() {
   if (!tab.value.url) return
   isConnecting.value = true
-  await window.antiphon.connectWebSocket(connectionId, tab.value.url, tab.value.headers)
+  await ipc.connectWebSocket(connectionId, tab.value.url, tab.value.headers)
 }
 
 async function disconnect() {
-  await window.antiphon.closeWebSocket(connectionId)
+  await ipc.closeWebSocket(connectionId)
 }
 
 async function sendMessage() {
   if (!draft.value || !isConnected.value) return
-  await window.antiphon.sendWebSocketMessage(connectionId, draft.value, false)
+  await ipc.sendWebSocketMessage(connectionId, draft.value, false)
   pushEntry('out', draft.value)
   draft.value = ''
 }
 
 onMounted(() => {
-  unsubscribe = window.antiphon.onWebSocketEvent(handleEvent)
+  unsubscribe = ipc.onWebSocketEvent(handleEvent)
 })
 
 onBeforeUnmount(() => {
   unsubscribe?.()
-  if (isConnected.value) window.antiphon.closeWebSocket(connectionId)
+  if (isConnected.value) ipc.closeWebSocket(connectionId)
 })
 </script>
 

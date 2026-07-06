@@ -87,15 +87,13 @@ async function confirmRename() {
 </script>
 
 <template>
-  <v-app-bar :elevation="0" density="compact">
-    <v-btn icon="mdi-arrow-left" variant="text" @click="router.push('/')" />
-    <v-app-bar-title class="text-body-1 font-weight-medium">{{ t('workspace.allTitle') }}</v-app-bar-title>
-  </v-app-bar>
-
-  <v-main>
-    <v-container fluid class="pa-6 antiphon-ws-page">
+  <!-- Kabuk (app bar + sol gezinme) App.vue'da; sayfa başlığı içerikte yer alır. -->
+  <v-container fluid class="pa-6">
       <div class="d-flex align-center justify-space-between mb-4">
-        <h1 class="text-h4 font-weight-bold">{{ t('header.workspaces') }}</h1>
+        <div class="d-flex align-center ga-2">
+          <v-btn icon="mdi-arrow-left" variant="text" density="comfortable" @click="router.push('/')" />
+          <h1 class="text-h4 font-weight-bold">{{ t('header.workspaces') }}</h1>
+        </div>
         <v-btn color="primary" variant="flat" class="text-none" @click="uiStore.openCreateWorkspaceDialog()">
           {{ t('workspace.createButton') }}
         </v-btn>
@@ -111,7 +109,6 @@ async function confirmRename() {
         v-model="search"
         :placeholder="t('workspace.searchPlaceholder')"
         density="compact"
-        variant="outlined"
         hide-details
         prepend-inner-icon="mdi-magnify"
         max-width="360"
@@ -208,14 +205,13 @@ async function confirmRename() {
       <v-alert v-if="workspacesStore.error" type="error" variant="tonal" density="compact" class="mt-4" closable>
         {{ workspacesStore.error }}
       </v-alert>
-    </v-container>
-  </v-main>
+  </v-container>
 
   <v-dialog v-model="renameDialog.open" max-width="420">
     <v-card class="pa-2">
       <v-card-title class="text-h6">{{ t('workspace.rename') }}</v-card-title>
       <v-card-text>
-        <v-text-field v-model="renameDialog.value" density="comfortable" variant="outlined" hide-details autofocus @keyup.enter="confirmRename" />
+        <v-text-field v-model="renameDialog.value" :placeholder="t('workspace.namePlaceholder')" density="comfortable" hide-details autofocus @keyup.enter="confirmRename" />
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -227,9 +223,6 @@ async function confirmRename() {
 </template>
 
 <style scoped>
-.antiphon-ws-page {
-  max-width: 1400px;
-}
 .antiphon-ws-table :deep(th) {
   font-size: 12px !important;
   font-weight: 600;

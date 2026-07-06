@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { ref, watch } from 'vue'
 import type { Auth, FolderMeta } from '@schema/request'
 import KeyValueEditor, { type KeyValueRow } from '../request/KeyValueEditor.vue'
@@ -14,7 +15,7 @@ const loadedMeta = ref<FolderMeta | null>(null)
 
 async function load() {
   if (!props.folderPath) return
-  const meta = await window.antiphon.readFolderMeta(props.folderPath)
+  const meta = await ipc.readFolderMeta(props.folderPath)
   loadedMeta.value = meta
   auth.value = meta?.auth ?? { type: 'none' }
   headerRows.value = (meta?.headers ?? []).map((h) => ({ ...h }))
@@ -26,7 +27,7 @@ watch(open, (isOpen) => {
 
 async function save() {
   if (!props.folderPath) return
-  await window.antiphon.writeFolderMeta(props.folderPath, {
+  await ipc.writeFolderMeta(props.folderPath, {
     ...loadedMeta.value,
     schema: 1,
     auth: auth.value,

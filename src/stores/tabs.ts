@@ -1,7 +1,8 @@
+import { ipc } from '@/lib/ipc'
 import { defineStore } from 'pinia'
 import { nanoid } from 'nanoid'
-import type { Auth, Body, FolderMeta, HttpMethod, KeyValue, RequestFile } from '@schema/request'
-import { SCHEMA_VERSION } from '@schema/request'
+import type { Auth, Body, FolderMeta, HttpMethod, KeyValue, RequestFile, RequestSettings } from '@schema/request'
+import { SCHEMA_VERSION, defaultRequestSettings } from '@schema/request'
 
 export type { HttpMethod }
 
@@ -21,6 +22,7 @@ export interface RequestTab {
   headers: KeyValue[]
   auth: Auth
   body: Body
+  settings: RequestSettings
   preRequestScript: string
   testScript: string
   docs: string
@@ -48,6 +50,7 @@ function blankTab(name = 'Yeni İstek', protocol: TabProtocol = 'http'): Request
     headers: [],
     auth: { type: 'none' },
     body: { mode: 'none' },
+    settings: defaultRequestSettings(),
     preRequestScript: '',
     testScript: '',
     docs: '',
@@ -72,6 +75,7 @@ export function tabToRequestFile(tab: RequestTab): RequestFile {
     headers: tab.headers.filter((h) => h.key !== ''),
     auth: tab.auth,
     body: tab.body,
+    settings: tab.settings,
     preRequestScript: tab.preRequestScript || undefined,
     testScript: tab.testScript || undefined,
     docs: tab.docs || undefined
@@ -92,6 +96,7 @@ function requestFileToTab(path: string, file: RequestFile, existingId?: string):
     headers: file.headers,
     auth: file.auth,
     body: file.body,
+    settings: file.settings ?? defaultRequestSettings(),
     preRequestScript: file.preRequestScript ?? '',
     testScript: file.testScript ?? '',
     docs: file.docs ?? ''
@@ -159,7 +164,7 @@ export const useTabsStore = defineStore('tabs', {
         this.activeTabId = existing.id
         return existing
       }
-      const file = await window.antiphon.readRequestFile(path)
+      const file = await ipc.readRequestFile(path)
       const tab = requestFileToTab(path, file)
       this.tabs.push(tab)
       this.activeTabId = tab.id
@@ -171,7 +176,7 @@ export const useTabsStore = defineStore('tabs', {
         this.activeTabId = existing.id
         return existing
       }
-      const meta = await window.antiphon.readFolderMeta(folderPath)
+      const meta = await ipc.readFolderMeta(folderPath)
       const tab = folderMetaToTab(folderPath, name, meta)
       this.tabs.push(tab)
       this.activeTabId = tab.id
@@ -202,9 +207,9 @@ export const useTabsStore = defineStore('tabs', {
       tab.isSaving = true
       try {
         if (tab.kind === 'collection') {
-          await window.antiphon.writeFolderMeta(tab.requestPath, tabToFolderMeta(tab))
+          await ipc.writeFolderMeta(tab.requestPath, tabToFolderMeta(tab))
         } else {
-          await window.antiphon.writeRequestFile(tab.requestPath, tabToRequestFile(tab))
+          await ipc.writeRequestFile(tab.requestPath, tabToRequestFile(tab))
         }
         tab.isDirty = false
       } finally {

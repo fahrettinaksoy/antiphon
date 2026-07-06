@@ -28,8 +28,8 @@ function confirmWithoutCredentials() {
             Uzak sunucu (remote) HTTPS kimlik doğrulama istiyorsa kullanıcı adı ve personal access token girin. SSH anahtarı
             veya credential helper kullanıyorsanız boş bırakıp devam edebilirsiniz.
           </p>
-          <v-text-field v-model="username" label="Kullanıcı adı" />
-          <v-text-field v-model="password" label="Token / Parola" type="password" />
+          <v-text-field v-model="username" label="Kullanıcı adı" placeholder="git-kullanici-adi" />
+          <v-text-field v-model="password" label="Token / Parola" type="password" placeholder="ghp_xxxxxxxxxxxxxxxx" />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { computed, ref, watch } from 'vue'
 import { useEnvironmentsStore } from '../../stores/environments'
 import { useWorkspaceStore } from '../../stores/workspace'
@@ -21,7 +22,7 @@ async function loadRows(path: string | null) {
     rows.value = []
     return
   }
-  const env = await window.antiphon.readEnvironment(path)
+  const env = await ipc.readEnvironment(path)
   rows.value = Object.entries(env.variables).map(([key, value]) => ({ key, value, enabled: true }))
 }
 
@@ -59,6 +60,7 @@ async function remove() {
             v-model="selectedPath"
             :items="environmentsStore.list.map((e) => ({ title: e.name, value: e.path }))"
             label="Environment"
+            placeholder="Environment seçin"
             style="max-width: 280px"
             hide-details
           />

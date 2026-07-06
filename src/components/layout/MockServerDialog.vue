@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { onMounted, ref } from 'vue'
 import type { MockServerStatusDto } from '@shared/ipc-contract'
 import AppEmptyState from '../common/AppEmptyState.vue'
@@ -10,20 +11,20 @@ const status = ref<MockServerStatusDto>({ running: false, port: null, routes: []
 const isStarting = ref(false)
 
 async function refreshStatus() {
-  status.value = await window.antiphon.getMockServerStatus()
+  status.value = await ipc.getMockServerStatus()
 }
 
 async function start() {
   isStarting.value = true
   try {
-    status.value = await window.antiphon.startMockServer(port.value)
+    status.value = await ipc.startMockServer(port.value)
   } finally {
     isStarting.value = false
   }
 }
 
 async function stop() {
-  await window.antiphon.stopMockServer()
+  await ipc.stopMockServer()
   await refreshStatus()
 }
 
@@ -43,7 +44,7 @@ onMounted(refreshStatus)
           <v-chip size="small" :color="status.running ? 'success' : 'medium-emphasis'" variant="tonal">
             {{ status.running ? `ÇALIŞIYOR :${status.port}` : 'DURDU' }}
           </v-chip>
-          <v-text-field v-model.number="port" label="Port" type="number" density="compact" style="max-width: 120px" hide-details :disabled="status.running" />
+          <v-text-field v-model.number="port" label="Port" type="number" placeholder="4010" density="compact" style="max-width: 120px" hide-details :disabled="status.running" />
           <v-btn v-if="!status.running" color="primary" :loading="isStarting" prepend-icon="mdi-play" class="text-none" @click="start">
             OpenAPI Seç ve Başlat
           </v-btn>

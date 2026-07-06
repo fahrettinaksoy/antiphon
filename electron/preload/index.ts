@@ -49,6 +49,7 @@ const api: AntiphonApi = {
   writeFolderMeta: (folderPath: string, data: FolderMetaInputDto) =>
     ipcRenderer.invoke(IpcChannels.workspaceWriteFolderMeta, folderPath, data),
   parseCurl: (command: string) => ipcRenderer.invoke(IpcChannels.importCurlParse, command),
+  chooseFile: () => ipcRenderer.invoke(IpcChannels.dialogChooseFile),
   importPostmanCollection: (workspaceRoot: string) => ipcRenderer.invoke(IpcChannels.importPostman, workspaceRoot),
   importOpenapiSpec: (workspaceRoot: string) => ipcRenderer.invoke(IpcChannels.importOpenapi, workspaceRoot),
   listEnvironments: (workspaceRoot: string) => ipcRenderer.invoke(IpcChannels.environmentList, workspaceRoot),
@@ -129,4 +130,20 @@ const api: AntiphonApi = {
   getMockServerStatus: () => ipcRenderer.invoke(IpcChannels.mockStatus)
 }
 
-contextBridge.exposeInMainWorld('antiphon', api)
+// Vue'nun reactive Proxy nesneleri IPC'nin structured clone algoritmasından geçemez
+// ("An object could not be cloned") — kaydetme/gönderme gibi nesne taşıyan tüm çağrılar
+// sessizce başarısız olur. Köprüden geçen her argüman burada düz (plain) veriye indirgenir;
+// fonksiyon argümanları (event callback'leri) aynen bırakılır.
+function toPlain(value: unknown): unknown {
+  return value !== null && typeof value === 'object' ? JSON.parse(JSON.stringify(value)) : value
+}
+
+const safeApi = Object.fromEntries(
+  Object.entries(api).map(([key, fn]) => [
+    key,
+    (...args: unknown[]) =>
+      (fn as (...fnArgs: unknown[]) => unknown)(...args.map((arg) => (typeof arg === 'function' ? arg : toPlain(arg))))
+  ])
+) as unknown as AntiphonApi
+
+contextBridge.exposeInMainWorld('antiphon', safeApi)

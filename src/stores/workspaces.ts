@@ -1,3 +1,4 @@
+import { ipc } from '@/lib/ipc'
 import { defineStore } from 'pinia'
 import type { CreateWorkspaceInput, WorkspaceMetaDto, WorkspaceSyncDirection } from '@shared/ipc-contract'
 import { useWorkspaceStore } from './workspace'
@@ -17,15 +18,15 @@ export const useWorkspacesStore = defineStore('workspaces', {
   },
   actions: {
     async init() {
-      this.list = await window.antiphon.listWorkspaces()
-      this.activeId = await window.antiphon.getActiveWorkspaceId()
+      this.list = await ipc.listWorkspaces()
+      this.activeId = await ipc.getActiveWorkspaceId()
       if (this.activeId) await this.open(this.activeId)
     },
     async refresh() {
-      this.list = await window.antiphon.listWorkspaces()
+      this.list = await ipc.listWorkspaces()
     },
     async open(id: string) {
-      const result = await window.antiphon.openWorkspaceById(id)
+      const result = await ipc.openWorkspaceById(id)
       if (!result) return
       this.activeId = result.meta.id
       await this.refresh()
@@ -34,7 +35,7 @@ export const useWorkspacesStore = defineStore('workspaces', {
     },
     async create(input: CreateWorkspaceInput) {
       this.error = null
-      const result = await window.antiphon.createWorkspace(input)
+      const result = await ipc.createWorkspace(input)
       this.activeId = result.meta.id
       await this.refresh()
       useWorkspaceStore().applyTree(result.tree, result.meta.localPath)
@@ -42,21 +43,21 @@ export const useWorkspacesStore = defineStore('workspaces', {
       return result.meta
     },
     async remove(id: string) {
-      this.list = await window.antiphon.deleteWorkspace(id)
+      this.list = await ipc.deleteWorkspace(id)
       if (this.activeId === id) {
         const next = this.list[0]
         if (next) await this.open(next.id)
       }
     },
     async rename(id: string, name: string) {
-      await window.antiphon.renameWorkspace(id, name)
+      await ipc.renameWorkspace(id, name)
       await this.refresh()
     },
     async sync(id: string, direction: WorkspaceSyncDirection) {
       this.isSyncing = true
       this.error = null
       try {
-        const tree = await window.antiphon.syncWorkspace(id, direction)
+        const tree = await ipc.syncWorkspace(id, direction)
         if (direction === 'pull' && this.activeId === id) {
           const meta = this.list.find((w) => w.id === id)
           if (meta) {

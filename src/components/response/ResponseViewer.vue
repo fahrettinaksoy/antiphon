@@ -31,11 +31,14 @@ const statusColor = computed(() => {
       <span class="text-caption text-medium-emphasis antiphon-mono">{{ fmt.ms(response.timing.total) }}</span>
       <span class="text-caption text-medium-emphasis antiphon-mono">{{ fmt.kb(response.sizeBytes) }}</span>
     </div>
-    <v-divider v-if="response" />
-
     <v-tabs v-if="response" v-model="activeTab" density="compact">
       <v-tab value="body">{{ t('response.tabs.body') }}</v-tab>
-      <v-tab value="headers">{{ t('response.tabs.headers') }}</v-tab>
+      <v-tab value="headers">
+        {{ t('response.tabs.headers') }}
+        <span v-if="response && Object.keys(response.headers).length" class="antiphon-tab-count">
+          {{ Object.keys(response.headers).length }}
+        </span>
+      </v-tab>
       <v-tab value="cookies">{{ t('response.tabs.cookies') }}</v-tab>
       <v-tab value="timing">{{ t('response.tabs.timing') }}</v-tab>
       <v-tab value="tests">
@@ -51,7 +54,6 @@ const statusColor = computed(() => {
         </v-chip>
       </v-tab>
     </v-tabs>
-    <v-divider v-if="response" />
 
     <div v-if="isLoading" class="d-flex align-center justify-center flex-grow-1">
       <v-progress-circular indeterminate color="primary" />

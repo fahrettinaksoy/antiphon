@@ -43,6 +43,36 @@ const tabsStore = useTabsStore()
 // Kök = çalışma alanının kendisi; üst düzey klasörler = koleksiyonlar.
 const items = computed(() => (workspaceStore.tree?.children ?? []).map((node) => toTreeItem(node, 0)))
 
+// Standart bölüm arama + HTTP method filtresi (SidebarSection v-model'leri).
+const search = ref('')
+const methodFilter = ref<string[]>([])
+const methodFilterOptions = Object.keys(METHOD_COLORS).map((m) => ({ title: m, value: m }))
+
+// Ağacı arama metni ve method filtresine göre daralt. Başlığı eşleşen klasörün altı
+// daraltılmaz (yalnızca method filtresi uygulanır); eşleşen çocuğu olmayan dallar gizlenir.
+function filterNode(node: TreeItem, q: string, methods: string[]): TreeItem | null {
+  if (node.type === 'request') {
+    const methodOk = methods.length === 0 || methods.includes((node.method ?? 'GET').toUpperCase())
+    const queryOk = !q || node.title.toLowerCase().includes(q)
+    return methodOk && queryOk ? node : null
+  }
+  const selfMatch = q !== '' && node.title.toLowerCase().includes(q)
+  const childQuery = selfMatch ? '' : q
+  const children = (node.children ?? [])
+    .map((child) => filterNode(child, childQuery, methods))
+    .filter((child): child is TreeItem => child !== null)
+  if (children.length > 0 || (selfMatch && methods.length === 0)) return { ...node, children }
+  return null
+}
+
+const filteredItems = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  if (!q && methodFilter.value.length === 0) return items.value
+  return items.value
+    .map((node) => filterNode(node, q, methodFilter.value))
+    .filter((node): node is TreeItem => node !== null)
+})
+
 function toTreeItem(node: WorkspaceNode, depth: number): TreeItem {
   return {
     id: node.id,
@@ -133,7 +163,15 @@ function openRunner(item: TreeItem) {
 </script>
 
 <template>
-  <SidebarSection :title="t('sidebar.collections')">
+  <SidebarSection
+    :title="t('sidebar.collections')"
+    :count="items.length || undefined"
+    searchable
+    :search-placeholder="t('sidebar.searchCollections')"
+    :filter-options="methodFilterOptions"
+    v-model:search="search"
+    v-model:filter="methodFilter"
+  >
     <template #actions>
       <NewItemMenu @new-http="openDialog('new-request', null)" @new-collection="openDialog('new-collection', null)" />
     </template>
@@ -156,9 +194,11 @@ function openRunner(item: TreeItem) {
       @action="openDialog('new-collection', null)"
     />
 
+    <AppEmptyState v-else-if="filteredItems.length === 0" size="compact" icon="mdi-magnify" :title="t('sidebar.noMatches')" />
+
     <v-treeview
       v-else
-      :items="items"
+      :items="filteredItems"
       item-value="id"
       item-title="title"
       density="compact"

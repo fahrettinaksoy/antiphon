@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ipc } from '@/lib/ipc'
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { nanoid } from 'nanoid'
 import KeyValueEditor from '../request/KeyValueEditor.vue'
@@ -51,20 +52,20 @@ async function connect() {
   if (!tab.value.url) return
   isConnecting.value = true
   messages.value = []
-  await window.antiphon.connectSse(connectionId, tab.value.url, tab.value.headers)
+  await ipc.connectSse(connectionId, tab.value.url, tab.value.headers)
 }
 
 async function disconnect() {
-  await window.antiphon.closeSse(connectionId)
+  await ipc.closeSse(connectionId)
 }
 
 onMounted(() => {
-  unsubscribe = window.antiphon.onSseEvent(handleEvent)
+  unsubscribe = ipc.onSseEvent(handleEvent)
 })
 
 onBeforeUnmount(() => {
   unsubscribe?.()
-  if (isConnected.value) window.antiphon.closeSse(connectionId)
+  if (isConnected.value) ipc.closeSse(connectionId)
 })
 </script>
 

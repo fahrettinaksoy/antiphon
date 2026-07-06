@@ -1,39 +1,16 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useEventListener } from '@vueuse/core'
-import TopAppBar from '../components/layout/TopAppBar.vue'
 import TabBar from '../components/layout/TabBar.vue'
-import HistoryPanel from '../components/layout/HistoryPanel.vue'
-import GitPanel from '../components/layout/GitPanel.vue'
 import TabContentView from '../components/layout/TabContentView.vue'
-import ActivityBar from '../components/sidebar/ActivityBar.vue'
-import SidebarPanel from '../components/sidebar/SidebarPanel.vue'
-import MockServerDialog from '../components/layout/MockServerDialog.vue'
 import AppEmptyState from '../components/common/AppEmptyState.vue'
 import { useTabsStore } from '../stores/tabs'
 import { useWorkspaceStore } from '../stores/workspace'
-import { useHistoryStore } from '../stores/history'
-import { useUiStore } from '../stores/ui'
 
 const tabsStore = useTabsStore()
 const workspaceStore = useWorkspaceStore()
-const historyStore = useHistoryStore()
-const uiStore = useUiStore()
-const drawer = ref(true)
 
 const otherOpenTabs = computed(() => tabsStore.tabs.filter((t) => t.id !== tabsStore.activeTabId))
-
-function replayHistoryEntry(entryId: string) {
-  const entry = historyStore.entries.find((e) => e.id === entryId)
-  if (!entry) return
-  const newTab = tabsStore.openNewTab(entry.requestName)
-  newTab.method = entry.method as typeof newTab.method
-  newTab.url = entry.url
-  newTab.headers = entry.headers
-  newTab.params = entry.params
-  if (entry.body) newTab.body = entry.body
-  if (entry.auth) newTab.auth = entry.auth
-}
 
 async function createFirstRequest() {
   if (workspaceStore.rootPath) {
@@ -57,16 +34,9 @@ useEventListener('keydown', (event: KeyboardEvent) => {
 </script>
 
 <template>
-  <TopAppBar />
-  <v-navigation-drawer v-model="drawer" permanent width="348">
-    <div class="d-flex h-100">
-      <ActivityBar />
-      <SidebarPanel @replay="replayHistoryEntry" />
-    </div>
-  </v-navigation-drawer>
-
-  <v-main>
-    <div class="d-flex flex-column" style="height: calc(100vh - 48px)">
+  <!-- Kabuk (app bar + sol gezinme) App.vue'da; burada yalnızca sekmeler ve içerik var.
+       Yükseklik, Vuetify layout değişkeniyle üst barlara otomatik uyum sağlar. -->
+  <div class="d-flex flex-column antiphon-workspace-page">
       <TabBar />
 
       <v-row v-if="tabsStore.activeTab" no-gutters class="flex-grow-1 overflow-hidden">
@@ -105,22 +75,15 @@ useEventListener('keydown', (event: KeyboardEvent) => {
         action-icon="mdi-plus"
         @action="createFirstRequest"
       />
-    </div>
-  </v-main>
-
-  <v-navigation-drawer v-model="uiStore.historyDrawerOpen" location="right" width="320" temporary>
-    <HistoryPanel @replay="replayHistoryEntry" />
-  </v-navigation-drawer>
-
-  <v-navigation-drawer v-model="uiStore.gitDrawerOpen" location="right" width="360" temporary>
-    <GitPanel />
-  </v-navigation-drawer>
-
-  <MockServerDialog v-model="uiStore.mockServerDialogOpen" />
+  </div>
 </template>
 
 <style scoped>
 .antiphon-split-selector {
   height: 40px;
+}
+/* v-main içinde tam yükseklik: 100vh eksi üst barlar (Vuetify layout değişkeni). */
+.antiphon-workspace-page {
+  height: calc(100vh - var(--v-layout-top, 0px));
 }
 </style>

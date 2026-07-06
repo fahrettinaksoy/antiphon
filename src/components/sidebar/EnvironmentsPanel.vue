@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useEnvironmentsStore } from '../../stores/environments'
 import { useWorkspaceStore } from '../../stores/workspace'
@@ -11,20 +11,30 @@ const { t } = useI18n()
 const environmentsStore = useEnvironmentsStore()
 const workspaceStore = useWorkspaceStore()
 const managerOpen = ref(false)
+
+// Standart bölüm araması
+const search = ref('')
+const filteredEnvs = computed(() => {
+  const q = search.value.trim().toLowerCase()
+  if (!q) return environmentsStore.list
+  return environmentsStore.list.filter((env) => env.name.toLowerCase().includes(q))
+})
+
+const activeEnvName = computed(
+  () => environmentsStore.list.find((env) => env.path === environmentsStore.activeEnvironmentPath)?.name ?? null
+)
 </script>
 
 <template>
-  <SidebarSection :title="t('sidebar.environments')">
-    <template #actions>
-      <v-btn
-        icon="mdi-cog-outline"
-        size="x-small"
-        variant="text"
-        :title="t('sidebar.environments')"
-        @click="managerOpen = true"
-      />
-    </template>
-
+  <SidebarSection
+    :title="t('sidebar.environments')"
+    :count="environmentsStore.list.length || undefined"
+    searchable
+    :search-placeholder="t('sidebar.searchEnvironments')"
+    v-model:search="search"
+    addable
+    @add="managerOpen = true"
+  >
     <AppEmptyState
       v-if="!workspaceStore.isOpen"
       size="compact"
@@ -44,6 +54,8 @@ const managerOpen = ref(false)
       @action="managerOpen = true"
     />
 
+    <AppEmptyState v-else-if="filteredEnvs.length === 0" size="compact" icon="mdi-magnify" :title="t('sidebar.noMatches')" />
+
     <v-list v-else density="compact" class="flex-grow-1 overflow-y-auto">
       <v-list-item
         :active="environmentsStore.activeEnvironmentPath === null"
@@ -55,7 +67,7 @@ const managerOpen = ref(false)
         <v-list-item-title class="text-body-2">Ortam yok</v-list-item-title>
       </v-list-item>
       <v-list-item
-        v-for="env in environmentsStore.list"
+        v-for="env in filteredEnvs"
         :key="env.path"
         :active="environmentsStore.activeEnvironmentPath === env.path"
         @click="environmentsStore.selectEnvironment(env.path)"
@@ -66,6 +78,18 @@ const managerOpen = ref(false)
         <v-list-item-title class="text-body-2 text-truncate">{{ env.name }}</v-list-item-title>
       </v-list-item>
     </v-list>
+
+    <template #footer>
+      <div class="d-flex align-center ga-2">
+        <span class="text-caption text-medium-emphasis text-truncate">
+          {{ t('sidebar.activeEnvironment') }}: {{ activeEnvName ?? '—' }}
+        </span>
+        <v-spacer />
+        <v-btn size="x-small" variant="text" prepend-icon="mdi-cog-outline" class="text-none" @click="managerOpen = true">
+          {{ t('sidebar.environments') }}
+        </v-btn>
+      </div>
+    </template>
 
     <EnvironmentManagerDialog v-model="managerOpen" />
   </SidebarSection>

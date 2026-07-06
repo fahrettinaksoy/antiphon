@@ -1,3 +1,4 @@
+import { ipc } from '@/lib/ipc'
 import { defineStore } from 'pinia'
 import type { WorkspaceNode } from '@shared/ipc-contract'
 import { useEnvironmentsStore } from './environments'
@@ -17,7 +18,7 @@ export const useWorkspaceStore = defineStore('workspace', {
     async openWorkspace() {
       this.isLoading = true
       try {
-        const tree = await window.antiphon.openWorkspace()
+        const tree = await ipc.openWorkspace()
         if (tree) {
           this.tree = tree
           this.rootPath = tree.path
@@ -36,22 +37,22 @@ export const useWorkspaceStore = defineStore('workspace', {
     },
     subscribeToChanges() {
       watcherUnsubscribe?.()
-      watcherUnsubscribe = window.antiphon.onWorkspaceChanged((tree) => {
+      watcherUnsubscribe = ipc.onWorkspaceChanged((tree) => {
         this.tree = tree
         if (this.rootPath) useEnvironmentsStore().refresh(this.rootPath)
       })
     },
     async createRequest(folderPath: string, name: string) {
-      return window.antiphon.createRequest(folderPath, name)
+      return ipc.createRequest(folderPath, name)
     },
     async createFolder(parentPath: string, name: string) {
-      await window.antiphon.createFolder(parentPath, name)
+      await ipc.createFolder(parentPath, name)
     },
     async deleteNode(path: string) {
-      await window.antiphon.deleteNode(path)
+      await ipc.deleteNode(path)
     },
     async renameNode(path: string, newName: string) {
-      await window.antiphon.renameNode(path, newName)
+      await ipc.renameNode(path, newName)
     }
   }
 })

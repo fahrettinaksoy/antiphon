@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState, type Extension } from '@codemirror/state'
-import { keymap } from '@codemirror/view'
+import { keymap, placeholder as cmPlaceholder } from '@codemirror/view'
 import { indentWithTab } from '@codemirror/commands'
 import { json } from '@codemirror/lang-json'
 import { javascript } from '@codemirror/lang-javascript'
@@ -65,6 +65,7 @@ function buildExtensions(): Extension[] {
     }),
     EditorView.editable.of(!props.readOnly)
   ]
+  if (props.placeholder) extensions.push(cmPlaceholder(props.placeholder))
   if (uiStore.themeName === 'antiphonDark') extensions.push(oneDark)
   return extensions
 }
@@ -80,6 +81,9 @@ function createEditor() {
 
 onMounted(createEditor)
 onBeforeUnmount(() => view.value?.destroy())
+
+// Araç çubukları (ör. Docs markdown editörü) seçim üzerinde işlem yapabilsin diye view dışa açılır.
+defineExpose({ view })
 
 watch(() => props.language, createEditor)
 watch(() => uiStore.themeName, createEditor)

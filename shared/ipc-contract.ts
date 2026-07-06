@@ -1,4 +1,4 @@
-import type { Auth, Body, EnvironmentFile, FolderMeta, FolderMetaInput, HttpMethod, KeyValue, RequestFile } from '@schema/request'
+import type { Auth, Body, EnvironmentFile, FolderMeta, FolderMetaInput, HttpMethod, KeyValue, RequestFile, RequestSettings } from '@schema/request'
 
 export interface HttpRequestPayload {
   id: string
@@ -9,6 +9,7 @@ export interface HttpRequestPayload {
   params: KeyValue[]
   body?: Body
   auth?: Auth
+  settings?: RequestSettings
   environmentVariables?: Record<string, string>
   requestPath?: string
   workspaceRoot?: string
@@ -297,6 +298,7 @@ export const IpcChannels = {
   importCurlParse: 'import:curl-parse',
   importPostman: 'import:postman',
   importOpenapi: 'import:openapi',
+  dialogChooseFile: 'dialog:choose-file',
   secretGet: 'secret:get',
   secretSet: 'secret:set',
   secretList: 'secret:list',
@@ -369,6 +371,8 @@ export interface AntiphonApi {
   readFolderMeta(folderPath: string): Promise<FolderMetaDto | null>
   writeFolderMeta(folderPath: string, data: FolderMetaInputDto): Promise<void>
   parseCurl(command: string): Promise<CurlParseResult>
+  /** Genel dosya seçme diyaloğu — seçilen dosyanın mutlak yolu, iptal edilirse null. */
+  chooseFile(): Promise<string | null>
   importPostmanCollection(workspaceRoot: string): Promise<ImportResult>
   importOpenapiSpec(workspaceRoot: string): Promise<ImportResult>
   listEnvironments(workspaceRoot: string): Promise<EnvironmentSummary[]>
