@@ -17,12 +17,16 @@ export const useUiStore = defineStore('ui', {
     systemPrefersDark: true,
     systemPrefersMoreContrast: false,
     sidebarWidth: 280,
+    // Sol kenar çubuğu görünürlüğü (app bar'daki hamburger ile gizlenip gösterilir).
+    sidebarVisible: true,
     activeSidebarSection: 'collections' as SidebarSection,
     commandPaletteOpen: false,
     historyDrawerOpen: false,
     gitDrawerOpen: false,
     mockServerDialogOpen: false,
     createWorkspaceDialogOpen: false,
+    // "İsteği Kaydet" çekmecesi: kaydedilecek (henüz dosyası olmayan) sekmenin id'si.
+    saveRequestTabId: null as string | null,
     locale: 'tr' as 'tr' | 'en',
     favoriteWorkspaceIds: [] as string[],
     platform: null as Platform | null
@@ -49,6 +53,11 @@ export const useUiStore = defineStore('ui', {
     },
     setSidebarSection(section: SidebarSection) {
       this.activeSidebarSection = section
+      // Gizliyken bir bölüme geçilirse kenar çubuğunu geri getir.
+      this.sidebarVisible = true
+    },
+    toggleSidebar() {
+      this.sidebarVisible = !this.sidebarVisible
     },
     setThemePreference(pref: ThemePreference) {
       this.themePreference = pref
@@ -81,6 +90,12 @@ export const useUiStore = defineStore('ui', {
     openMockServerDialog() {
       this.mockServerDialogOpen = true
     },
+    openSaveRequest(tabId: string) {
+      this.saveRequestTabId = tabId
+    },
+    closeSaveRequest() {
+      this.saveRequestTabId = null
+    },
     openCreateWorkspaceDialog() {
       this.createWorkspaceDialogOpen = true
     },
@@ -98,6 +113,6 @@ export const useUiStore = defineStore('ui', {
   },
   persist: {
     // systemPrefers* KALICI DEĞİL — her açılışta OS'ten canlı okunur.
-    pick: ['themePreference', 'contrastPreference', 'locale', 'sidebarWidth', 'activeSidebarSection', 'favoriteWorkspaceIds']
+    pick: ['themePreference', 'contrastPreference', 'locale', 'sidebarWidth', 'sidebarVisible', 'activeSidebarSection', 'favoriteWorkspaceIds']
   }
 })

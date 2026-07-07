@@ -10,11 +10,13 @@ import SsePanel from '../realtime/SsePanel.vue'
 import GraphqlPanel from '../graphql/GraphqlPanel.vue'
 import McpPanel from '../mcp/McpPanel.vue'
 import CollectionEditor from '../collection/CollectionEditor.vue'
+import EnvironmentEditor from '../environment/EnvironmentEditor.vue'
 import { useTabsStore } from '../../stores/tabs'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useEnvironmentsStore } from '../../stores/environments'
 import { useHistoryStore } from '../../stores/history'
 import { useResponsesStore } from '../../stores/responses'
+import { useUiStore } from '../../stores/ui'
 
 const props = defineProps<{ tabId: string | null }>()
 
@@ -23,6 +25,7 @@ const workspaceStore = useWorkspaceStore()
 const environmentsStore = useEnvironmentsStore()
 const historyStore = useHistoryStore()
 const responsesStore = useResponsesStore()
+const uiStore = useUiStore()
 
 const tab = computed(() => tabsStore.tabs.find((t) => t.id === props.tabId) ?? null)
 const responseState = computed(() => (props.tabId ? responsesStore.forTab(props.tabId) : { response: null, error: null, isLoading: false }))
@@ -81,10 +84,15 @@ async function sendActiveRequest() {
 }
 
 async function saveActiveTab() {
-  if (tab.value) {
-    tabsStore.markDirty(tab.value.id)
-    await tabsStore.saveTab(tab.value.id)
+  const current = tab.value
+  if (!current) return
+  // Dosyası olmayan (boşta) istek: konum seçtiren "İsteği Kaydet" çekmecesini aç.
+  if (!current.requestPath && current.kind === 'request') {
+    uiStore.openSaveRequest(current.id)
+    return
   }
+  tabsStore.markDirty(current.id)
+  await tabsStore.saveTab(current.id)
 }
 
 watchDebounced(
@@ -105,6 +113,10 @@ defineExpose({ saveActiveTab })
   <div v-if="tab" class="d-flex flex-column h-100">
     <template v-if="tab.kind === 'collection'">
       <CollectionEditor v-model="tab" />
+    </template>
+
+    <template v-else-if="tab.kind === 'environment'">
+      <EnvironmentEditor v-model="tab" />
     </template>
 
     <template v-else-if="tab.protocol === 'ws'">

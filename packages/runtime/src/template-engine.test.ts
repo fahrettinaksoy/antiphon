@@ -32,7 +32,7 @@ describe('resolveTemplate', () => {
       headers: {},
       body: JSON.stringify({ token: 'abc123', user: { id: 42 } }),
       bodyEncoding: 'utf8',
-      timing: { dns: 0, tcp: 0, tls: 0, ttfb: 0, download: 0, total: 1 },
+      timing: { prepare: 0, socketInit: 0, dns: 0, tcp: 0, tls: 0, ttfb: 0, download: 0, process: 0, total: 1 },
       sizeBytes: 10
     })
     const ctx: TemplateContext = { variables: {}, resolveSecret: () => undefined }

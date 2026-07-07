@@ -1,13 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from '@/composables/i18n'
 import { useEnvironmentsStore } from '../../stores/environments'
-import EnvironmentManagerDialog from './EnvironmentManagerDialog.vue'
+import { useTabsStore } from '../../stores/tabs'
 
+const router = useRouter()
+const { t } = useI18n()
 const environmentsStore = useEnvironmentsStore()
-const managerOpen = ref(false)
+const tabsStore = useTabsStore()
 
 function handleSelect(path: string | null) {
   environmentsStore.selectEnvironment(path)
+}
+
+// Kalem, SEÇİLİ ortamın düzenleyici sekmesini açar; seçim yoksa uyarı gösterilir.
+const noSelectionWarning = ref(false)
+async function editActiveEnvironment() {
+  const active = environmentsStore.activeEnvironment
+  if (!active) {
+    noSelectionWarning.value = true
+    return
+  }
+  await tabsStore.openEnvironment(active.path, active.name)
+  if (router.currentRoute.value.path !== '/') router.push('/')
 }
 </script>
 
@@ -21,7 +37,16 @@ function handleSelect(path: string | null) {
       style="min-width: 180px"
       @update:model-value="handleSelect"
     />
-    <v-btn icon="mdi-cog-outline" size="small" variant="text" title="Environment yönet" @click="managerOpen = true" />
-    <EnvironmentManagerDialog v-model="managerOpen" />
+    <v-btn
+      icon="mdi-square-edit-outline"
+      size="small"
+      variant="text"
+      :title="t('environment.editSelected')"
+      @click="editActiveEnvironment"
+    />
+
+    <v-snackbar v-model="noSelectionWarning" :timeout="3000" color="warning" variant="tonal">
+      {{ t('environment.selectFirst') }}
+    </v-snackbar>
   </div>
 </template>

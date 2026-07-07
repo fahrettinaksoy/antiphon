@@ -5,6 +5,7 @@ import { useI18n } from '@/composables/i18n'
 import type { CreateWorkspaceInput, WorkspaceStorageKind, WorkspaceVisibility } from '@shared/ipc-contract'
 import { useWorkspacesStore } from '../../stores/workspaces'
 import AppDefaults from '../common/AppDefaults.vue'
+import SidebarSection from '../sidebar/SidebarSection.vue'
 
 const model = defineModel<boolean>({ required: true })
 const { t } = useI18n()
@@ -103,13 +104,16 @@ async function submit() {
 </script>
 
 <template>
-  <v-dialog v-model="model" max-width="760" scrollable>
-    <v-card class="pa-2">
-      <v-card-title class="text-h5 font-weight-bold pt-4 px-4">{{ t('workspace.createTitle') }}</v-card-title>
+  <!-- Dialog yerine sağdan açılan çekmece — Git/Geçmiş ile aynı standart header/footer iskeleti. -->
+  <v-navigation-drawer v-model="model" location="right" temporary width="520">
+    <SidebarSection :title="t('workspace.createTitle')">
+      <template #actions>
+        <v-btn icon="mdi-close" size="x-small" variant="text" :title="t('actions.cancel')" @click="model = false" />
+      </template>
 
-      <!-- Modal formda alanlar comfortable yoğunlukta (global compact yerine). -->
+      <!-- Form alanları comfortable yoğunlukta (global compact yerine). -->
       <AppDefaults preset="dialogForm">
-      <v-card-text class="px-4">
+      <div class="flex-grow-1 overflow-y-auto px-4 pt-2">
         <!-- Ad -->
         <label class="antiphon-field-label">{{ t('workspace.nameLabel') }}</label>
         <v-text-field
@@ -209,21 +213,23 @@ async function submit() {
           </v-chip>
         </v-chip-group>
 
-        <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact" class="mt-4">
+        <v-alert v-if="errorMessage" type="error" variant="tonal" density="compact" class="mt-4 mb-4">
           {{ errorMessage }}
         </v-alert>
-      </v-card-text>
-
-      <v-card-actions class="px-4 pb-4">
-        <v-spacer />
-        <VBtnText @click="model = false">{{ t('actions.cancel') }}</VBtnText>
-        <VBtnPrimary :disabled="!canSubmit" :loading="submitting" @click="submit">
-          {{ t('workspace.createButton') }}
-        </VBtnPrimary>
-      </v-card-actions>
+      </div>
       </AppDefaults>
-    </v-card>
-  </v-dialog>
+
+      <!-- Standart footer: yan yana eylemler — İptal solda, birincil eylem kalan genişliği alır -->
+      <template #footer>
+        <div class="d-flex ga-2">
+          <VBtnText @click="model = false">{{ t('actions.cancel') }}</VBtnText>
+          <VBtnPrimary class="flex-grow-1" :disabled="!canSubmit" :loading="submitting" @click="submit">
+            {{ t('workspace.createButton') }}
+          </VBtnPrimary>
+        </div>
+      </template>
+    </SidebarSection>
+  </v-navigation-drawer>
 </template>
 
 <style scoped>
@@ -233,10 +239,11 @@ async function submit() {
   font-weight: 600;
   margin-bottom: 8px;
 }
+/* Çekmece genişliğinde depolama kartları tek sütun (dikey liste) okunur. */
 .antiphon-cards {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: 1fr;
+  gap: 8px;
 }
 .antiphon-cards--2 {
   grid-template-columns: repeat(2, 1fr);

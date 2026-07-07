@@ -178,10 +178,11 @@ onBeforeUnmount(() => {
       <v-divider vertical />
 
       <v-col cols="4" class="h-100 d-flex flex-column overflow-hidden">
-        <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1">Query</div>
+        <div lang="en" class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1">Query</div>
         <CodeMirrorEditor v-model="tab.graphqlQuery" language="graphql" :graphql-schema="schema ?? undefined" style="height: 60%" />
         <v-divider />
-        <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1">Variables</div>
+        <!-- lang="en": "Variables" VARİABLES değil VARIABLES olarak büyür. -->
+        <div lang="en" class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1">Variables</div>
         <CodeMirrorEditor v-model="tab.graphqlVariables" language="json" style="height: 30%" />
       </v-col>
       <v-divider vertical />

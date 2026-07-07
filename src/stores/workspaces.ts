@@ -1,6 +1,6 @@
 import { ipc } from '@/lib/ipc'
 import { defineStore } from 'pinia'
-import type { CreateWorkspaceInput, WorkspaceMetaDto, WorkspaceSyncDirection } from '@shared/ipc-contract'
+import type { CreateWorkspaceInput, WorkspaceMetaDto, WorkspaceSyncDirection, WorkspaceUpdateInput } from '@shared/ipc-contract'
 import { useWorkspaceStore } from './workspace'
 import { useEnvironmentsStore } from './environments'
 
@@ -51,6 +51,11 @@ export const useWorkspacesStore = defineStore('workspaces', {
     },
     async rename(id: string, name: string) {
       await ipc.renameWorkspace(id, name)
+      await this.refresh()
+    },
+    // Ad ve/veya görünürlük güncellemesi (Düzenle diyaloğu).
+    async update(id: string, patch: WorkspaceUpdateInput) {
+      await ipc.updateWorkspace(id, patch)
       await this.refresh()
     },
     async sync(id: string, direction: WorkspaceSyncDirection) {

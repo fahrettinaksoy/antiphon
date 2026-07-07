@@ -89,11 +89,17 @@ export async function writeRequestFile(filePath: string, data: RequestFile): Pro
 }
 
 export async function createRequestFile(folderPath: string, name: string): Promise<WorkspaceNode> {
-  const fileName = `${slugify(name)}${REQUEST_EXTENSION}`
-  const filePath = join(folderPath, fileName)
+  // Aynı ad varsa mevcut dosyayı EZME — "Ad 2", "Ad 3"… olarak benzersizleştir.
+  let finalName = name
+  let filePath = join(folderPath, `${slugify(finalName)}${REQUEST_EXTENSION}`)
+  for (let counter = 2; await pathExists(filePath); counter++) {
+    finalName = `${name} ${counter}`
+    filePath = join(folderPath, `${slugify(name)}-${counter}${REQUEST_EXTENSION}`)
+  }
+
   const initial: RequestFile = {
     schema: SCHEMA_VERSION,
-    name,
+    name: finalName,
     method: 'GET',
     url: '',
     params: [],
@@ -102,7 +108,7 @@ export async function createRequestFile(folderPath: string, name: string): Promi
     body: { mode: 'none' }
   }
   await writeRequestFile(filePath, initial)
-  return { id: filePath, type: 'request', name, path: filePath }
+  return { id: filePath, type: 'request', name: finalName, path: filePath }
 }
 
 export async function createFolder(parentPath: string, name: string): Promise<WorkspaceNode> {

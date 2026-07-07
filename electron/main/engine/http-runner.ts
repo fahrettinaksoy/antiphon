@@ -22,11 +22,14 @@ import { request as httpRequest } from 'node:http'
 import { Agent as HttpsAgent, request as httpsRequest } from 'node:https'
 
 interface Timings {
+  prepare: number
+  socketInit: number
   dns: number
   tcp: number
   tls: number
   ttfb: number
   download: number
+  process: number
   total: number
 }
 
@@ -36,7 +39,9 @@ async function loadGot() {
   return module.default
 }
 
-function extractTimings(res: GotResponse): Timings {
+// prepare: istek hazırlığı (script/şablon/ayar çözümü, got öncesi); process: yanıt işleme
+// (gövde çözümleme + test script, got sonrası) — ikisi de runner'da duvar saatiyle ölçülür.
+function extractTimings(res: GotResponse, prepareMs: number, processMs: number): Timings {
   const t = res.timings
   const start = t.start ?? 0
   const socket = t.socket ?? start
@@ -47,12 +52,15 @@ function extractTimings(res: GotResponse): Timings {
   const end = t.end ?? response
 
   return {
+    prepare: prepareMs,
+    socketInit: socket - start,
     dns: lookup - socket,
     tcp: connect - lookup,
     tls: secureConnect > connect ? secureConnect - connect : 0,
     ttfb: response - secureConnect,
     download: end - response,
-    total: end - start
+    process: processMs,
+    total: prepareMs + (end - start) + processMs
   }
 }
 
@@ -157,6 +165,7 @@ async function buildTemplateContext(variables: Record<string, string>, candidate
 }
 
 export async function runHttpRequest(payload: HttpRequestPayload): Promise<HttpResponsePayload> {
+  const runStartedAt = Date.now()
   const got = await loadGot()
 
   const inherited =
@@ -272,7 +281,44 @@ export async function runHttpRequest(payload: HttpRequestPayload): Promise<HttpR
     }
   ]
 
-  const response = await got(url, {
+  // Bağlantı/TLS bilgisi: soket alanları bağlantı kapanınca silindiği için yanıt
+  // BAŞLIKLARI geldiği anda (request→response olayı, soket canlıyken) yakalanır.
+  // Bu yol hem HTTP/1.1 hem HTTP/2 (http2-wrapper proxy soketi) için çalışır.
+  let capturedNetwork: Omit<NonNullable<HttpResponsePayload['network']>, 'httpVersion'> | undefined
+  const captureFromHolder = (holder: unknown) => {
+    try {
+      const raw = holder as {
+        socket?: Record<string, unknown>
+        req?: { socket?: Record<string, unknown> }
+        request?: { socket?: Record<string, unknown> }
+      }
+      const socket = raw.socket ?? raw.req?.socket ?? raw.request?.socket
+      if (!socket) return
+      const hasTls = typeof socket.getCipher === 'function'
+      const cert = hasTls ? (socket.getPeerCertificate as () => Record<string, unknown>)() : undefined
+      const certSubject = cert?.subject as Record<string, string> | undefined
+      const certIssuer = cert?.issuer as Record<string, string> | undefined
+      const fields = {
+        localAddress: socket.localAddress as string | undefined,
+        remoteAddress: socket.remoteAddress as string | undefined,
+        tlsProtocol: hasTls ? ((socket.getProtocol as () => string | null)() ?? undefined) : undefined,
+        cipherName: hasTls ? ((socket.getCipher as () => { name?: string } | null)()?.name ?? undefined) : undefined,
+        certCn: certSubject?.CN,
+        certIssuerCn: certIssuer?.CN,
+        certValidUntil: cert?.valid_to as string | undefined
+      }
+      // Yalnızca dolu alanları birleştir (yönlendirmelerde son yakalama kazanır).
+      capturedNetwork = {
+        ...capturedNetwork,
+        ...Object.fromEntries(Object.entries(fields).filter(([, v]) => v !== undefined))
+      }
+    } catch {
+      /* en-iyi-çaba */
+    }
+  }
+
+  const prepareMs = Date.now() - runStartedAt
+  const requestPromise = got(url, {
     method: preRequest.request.method as never,
     headers,
     body: bodyContent,
@@ -288,6 +334,33 @@ export async function runHttpRequest(payload: HttpRequestPayload): Promise<HttpR
     ...(lenientRequest ? { request: lenientRequest as never } : {}),
     ...gotOptions
   })
+
+  // Yanıt başlıkları gelir gelmez soketten bağlantı bilgisi yakala.
+  ;(requestPromise as unknown as { on?: (event: string, cb: (req: Record<string, unknown>) => void) => void }).on?.(
+    'request',
+    (clientRequest) => {
+      const once = clientRequest.once as ((event: string, cb: () => void) => void) | undefined
+      once?.call(clientRequest, 'response', () => captureFromHolder(clientRequest))
+    }
+  )
+
+  const response = await requestPromise
+
+  const gotFinishedAt = Date.now()
+
+  // Gönderilen isteğin yaklaşık boyutu (başlıklar "k: v\r\n" + gövde baytları).
+  const requestHeaderBytes = Object.entries(headers).reduce((sum, [key, value]) => sum + key.length + String(value).length + 4, 0)
+  let requestBodyBytes = 0
+  if (typeof bodyContent === 'string') requestBodyBytes = Buffer.byteLength(bodyContent)
+  else if (Buffer.isBuffer(bodyContent)) requestBodyBytes = bodyContent.byteLength
+
+  // Olay yakalayamadıysa son bir deneme; HTTP sürümü her zaman dolu.
+  if (!capturedNetwork) captureFromHolder(response)
+  const network: HttpResponsePayload['network'] = {
+    httpVersion:
+      (response as unknown as { httpVersion?: string }).httpVersion || (gotOptions.http2 ? '2.0' : '1.1'),
+    ...capturedNetwork
+  }
 
   const bodyBuffer = response.body as unknown as Buffer
   const isText = /json|text|xml|html|javascript/.test(response.headers['content-type'] ?? '')
@@ -307,9 +380,11 @@ export async function runHttpRequest(payload: HttpRequestPayload): Promise<HttpR
     headers: responseHeaders,
     body: responseBody,
     bodyEncoding: isText ? 'utf8' : 'base64',
-    timing: extractTimings(response),
+    timing: extractTimings(response, prepareMs, Date.now() - gotFinishedAt),
     sizeBytes: bodyBuffer.byteLength,
-    testResults: testRun.tests
+    testResults: testRun.tests,
+    requestSize: { headers: requestHeaderBytes, body: requestBodyBytes },
+    network
   }
 
   cacheResponse(payload.name, result)

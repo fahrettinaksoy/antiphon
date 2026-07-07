@@ -1,53 +1,50 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { ref } from 'vue'
+// GLOBAL app bar — çalışma alanına özel eylemler WorkspaceToolbar'da yaşar.
+import { computed } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useRouter } from 'vue-router'
 import { useUiStore } from '../../stores/ui'
-import { useWorkspaceStore } from '../../stores/workspace'
-import EnvSelector from '../sidebar/EnvSelector.vue'
 import WorkspaceMenu from '../workspace/WorkspaceMenu.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const uiStore = useUiStore()
-const workspaceStore = useWorkspaceStore()
 
-const snackbar = ref<{ open: boolean; text: string }>({ open: false, text: '' })
+// Hamburger yalnızca sol kenar çubuğunun var olduğu rotada (çalışma alanı) görünür.
+const inWorkspace = computed(() => router.currentRoute.value.path === '/')
 
 // Dil tek kaynak: uiStore.locale. App.vue izleyicisi lazy yükleyip i18n'e uygular.
 function toggleLocale() {
   uiStore.setLocale(uiStore.locale === 'tr' ? 'en' : 'tr')
 }
 
+// Ana Sayfa ayrı bir genel sayfadır (son etkinlik + favoriler + son kullanılanlar).
 function goHome() {
-  uiStore.setSidebarSection('collections')
-  if (router.currentRoute.value.path !== '/') router.push('/')
-}
-
-function showResult(kind: string, result: { importedCount: number; skipped: string[] }) {
-  const skippedText = result.skipped.length > 0 ? `, ${result.skipped.length} atlandı` : ''
-  snackbar.value = { open: true, text: `${kind}: ${result.importedCount} istek içe aktarıldı${skippedText}` }
-}
-
-async function importPostman() {
-  if (!workspaceStore.rootPath) return
-  const result = await ipc.importPostmanCollection(workspaceStore.rootPath)
-  showResult('Postman', result)
-}
-
-async function importOpenapi() {
-  if (!workspaceStore.rootPath) return
-  const result = await ipc.importOpenapiSpec(workspaceStore.rootPath)
-  showResult('OpenAPI', result)
+  if (router.currentRoute.value.path !== '/home') router.push('/home')
 }
 </script>
 
 <template>
-  <v-app-bar :elevation="0" density="compact" height="52" class="px-2 antiphon-app-bar">
+  <!-- MD3 top app bar: 64px yükseklik; başta kenar çubuğu aç/kapa (hamburger) gezinme ikonu.
+       macOS'ta trafik ışıkları bu barın sol boşluğuna oturur (ayrı başlık şeridi yok). -->
+  <v-app-bar
+    :elevation="0"
+    height="64"
+    class="px-2 antiphon-app-bar"
+    :class="{ 'antiphon-app-bar--inset': uiStore.needsTrafficLightInset }"
+  >
     <template #prepend>
+      <v-btn
+        v-if="inWorkspace"
+        icon="mdi-menu"
+        variant="text"
+        density="comfortable"
+        :title="t('header.toggleSidebar')"
+        @click="uiStore.toggleSidebar"
+      />
       <v-icon icon="mdi-vector-triangle" size="22" class="mx-2" color="primary" />
-      <span class="text-subtitle-1 font-weight-bold mr-4 text-uppercase antiphon-brand">{{ t('app.name') }}</span>
+      <!-- lang="en": marka adı büyük harfe çevrilirken Türkçe i→İ kuralı uygulanmasın (ANTIPHON, ANTİPHON değil). -->
+      <span lang="en" class="text-subtitle-1 font-weight-bold mr-4 text-uppercase antiphon-brand">{{ t('app.name') }}</span>
     </template>
 
     <!-- Sol gezinme bağlantıları (Postman: Home / Workspaces / API Network / Explore) -->
@@ -57,29 +54,6 @@ async function importOpenapi() {
       </v-btn>
 
       <WorkspaceMenu />
-
-      <v-menu>
-        <template #activator="{ props: menuProps }">
-          <v-btn
-            v-bind="menuProps"
-            variant="text"
-            size="small"
-            append-icon="mdi-chevron-down"
-            class="text-none antiphon-nav__link"
-            :disabled="!workspaceStore.isOpen"
-          >
-            {{ t('header.import') }}
-          </v-btn>
-        </template>
-        <v-list density="compact">
-          <v-list-item prepend-icon="mdi-application-braces-outline" @click="importPostman">
-            <v-list-item-title>Postman Collection (v2.1)</v-list-item-title>
-          </v-list-item>
-          <v-list-item prepend-icon="mdi-file-code-outline" @click="importOpenapi">
-            <v-list-item-title>OpenAPI 3.x Spec</v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </v-menu>
 
       <v-btn variant="text" size="small" class="text-none antiphon-nav__link" @click="uiStore.openCommandPalette">
         {{ t('header.explore') }}
@@ -97,14 +71,7 @@ async function importOpenapi() {
 
     <v-spacer />
 
-    <!-- Sağ eylem kümesi -->
-    <EnvSelector v-if="workspaceStore.isOpen" class="mr-2" />
-
-    <div class="antiphon-icon-group mr-2">
-      <v-btn v-if="workspaceStore.isOpen" icon="mdi-source-branch" variant="text" density="comfortable" size="small" title="Git" @click="uiStore.toggleGitDrawer" />
-      <v-btn icon="mdi-history" variant="text" density="comfortable" size="small" :title="t('sidebar.history')" @click="uiStore.toggleHistoryDrawer" />
-    </div>
-
+    <!-- Çalışma alanına özel eylemler (İçe Aktar, ortam, Git, Geçmiş) WorkspaceToolbar'da yaşar. -->
     <div class="antiphon-icon-group ml-1">
       <v-btn
         :icon="uiStore.themeName === 'antiphonDark' ? 'mdi-weather-night' : 'mdi-weather-sunny'"
@@ -119,7 +86,6 @@ async function importOpenapi() {
     </div>
   </v-app-bar>
 
-  <v-snackbar v-model="snackbar.open" :timeout="4000">{{ snackbar.text }}</v-snackbar>
 </template>
 
 <style scoped>
@@ -131,6 +97,10 @@ async function importOpenapi() {
 .antiphon-app-bar :deep(input),
 .antiphon-app-bar :deep(a) {
   -webkit-app-region: no-drag;
+}
+/* macOS trafik ışıklarına yer aç (hiddenInset + trafficLightPosition ile bar içinde dururlar). */
+.antiphon-app-bar--inset :deep(.v-toolbar__content) {
+  padding-left: 76px;
 }
 .antiphon-brand {
   letter-spacing: 0.04em;

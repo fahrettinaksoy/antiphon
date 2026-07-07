@@ -41,6 +41,8 @@ function storageLabel(meta: WorkspaceMetaDto): string | null {
 async function switchTo(id: string) {
   if (id !== workspacesStore.activeId) await workspacesStore.open(id)
   menuOpen.value = false
+  // Seçim hangi sayfada yapılırsa yapılsın çalışma alanı görünümüne git.
+  if (router.currentRoute.value.path !== '/') router.push('/')
 }
 
 function openCreate() {

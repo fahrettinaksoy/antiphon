@@ -41,6 +41,7 @@
     "hpagent": "^1.2.0",
     "isomorphic-git": "^1.38.6",
     "js-yaml": "^4.1.0",
+    "jsonpath-plus": "^10.4.0",
     "marked": "^18.0.5",
     "nanoid": "^5.0.9",
     "pinia": "^3.0.4",

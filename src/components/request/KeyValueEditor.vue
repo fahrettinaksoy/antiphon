@@ -24,8 +24,9 @@ ensureTrailingRow()
 </script>
 
 <template>
-  <!-- MD data table: başlık satırlı tablo; hücre içi düzenleme "plain" alanlarla yapılır. -->
-  <v-table density="compact" class="antiphon-kv-table">
+  <!-- MD data table: başlık satırlı tablo; hücre içi düzenleme "plain" alanlarla yapılır.
+       density/hover global VTable varsayılanından gelir. -->
+  <v-table class="antiphon-kv-table">
     <thead>
       <tr>
         <th class="antiphon-kv-table__check"></th>

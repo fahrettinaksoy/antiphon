@@ -2,7 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useRouter } from 'vue-router'
-import type { WorkspaceMetaDto, WorkspaceSyncDirection } from '@shared/ipc-contract'
+import type { WorkspaceMetaDto, WorkspaceSyncDirection, WorkspaceVisibility } from '@shared/ipc-contract'
 import { useWorkspacesStore } from '../stores/workspaces'
 import { useUiStore } from '../stores/ui'
 import { useFormat } from '../composables/useFormat'
@@ -74,15 +74,52 @@ async function remove(meta: WorkspaceMetaDto) {
   await workspacesStore.remove(meta.id)
 }
 
-// Yeniden adlandırma
-const renameDialog = ref<{ open: boolean; id: string | null; value: string }>({ open: false, id: null, value: '' })
-function openRename(meta: WorkspaceMetaDto) {
-  renameDialog.value = { open: true, id: meta.id, value: meta.name }
+// Düzenleme: ad + görünürlük
+const editDialog = ref<{ open: boolean; id: string | null; name: string; type: WorkspaceVisibility }>({
+  open: false,
+  id: null,
+  name: '',
+  type: 'personal'
+})
+const visibilityOptions = computed(() => [
+  { value: 'personal' as const, icon: 'mdi-account-outline', title: t('workspace.visibility.personal') },
+  { value: 'internal' as const, icon: 'mdi-account-group-outline', title: t('workspace.visibility.internal') },
+  { value: 'public' as const, icon: 'mdi-web', title: t('workspace.visibility.public') }
+])
+function openEdit(meta: WorkspaceMetaDto) {
+  editDialog.value = { open: true, id: meta.id, name: meta.name, type: meta.type }
 }
-async function confirmRename() {
-  const { id, value } = renameDialog.value
-  if (id && value.trim()) await workspacesStore.rename(id, value.trim())
-  renameDialog.value = { open: false, id: null, value: '' }
+async function confirmEdit() {
+  const { id, name, type } = editDialog.value
+  if (id && name.trim()) await workspacesStore.update(id, { name: name.trim(), type })
+  editDialog.value.open = false
+}
+
+// Ekibi davet et: depolama türüne göre paylaşım bilgisi (hesapsız/git-native model)
+const inviteDialog = ref<{ open: boolean; meta: WorkspaceMetaDto | null }>({ open: false, meta: null })
+const copied = ref(false)
+function openInvite(meta: WorkspaceMetaDto) {
+  copied.value = false
+  inviteDialog.value = { open: true, meta }
+}
+const inviteValue = computed(() => {
+  const meta = inviteDialog.value.meta
+  if (!meta) return ''
+  if (meta.storage.kind === 'gist') return meta.storage.gistId ?? ''
+  if (meta.storage.kind === 'webdav') return meta.storage.url
+  return meta.localPath
+})
+const inviteHint = computed(() => {
+  const kind = inviteDialog.value.meta?.storage.kind
+  if (kind === 'gist') return t('workspace.inviteGistHint')
+  if (kind === 'webdav') return t('workspace.inviteWebdavHint')
+  return t('workspace.inviteLocalHint')
+})
+async function copyInvite() {
+  if (!inviteValue.value) return
+  await navigator.clipboard.writeText(inviteValue.value)
+  copied.value = true
+  setTimeout(() => (copied.value = false), 2000)
 }
 </script>
 
@@ -164,7 +201,7 @@ async function confirmRename() {
             <td class="text-right" @click.stop>
               <v-btn
                 :icon="isFavorite(meta.id) ? 'mdi-star' : 'mdi-star-outline'"
-                :color="isFavorite(meta.id) ? 'amber' : undefined"
+                :color="isFavorite(meta.id) ? 'warning' : undefined"
                 size="small"
                 variant="text"
                 @click="uiStore.toggleFavoriteWorkspace(meta.id)"
@@ -177,8 +214,11 @@ async function confirmRename() {
                   <v-list-item prepend-icon="mdi-open-in-app" @click="openWorkspace(meta)">
                     <v-list-item-title>{{ t('workspace.open') }}</v-list-item-title>
                   </v-list-item>
-                  <v-list-item prepend-icon="mdi-pencil-outline" @click="openRename(meta)">
-                    <v-list-item-title>{{ t('workspace.rename') }}</v-list-item-title>
+                  <v-list-item prepend-icon="mdi-pencil-outline" @click="openEdit(meta)">
+                    <v-list-item-title>{{ t('workspace.edit') }}</v-list-item-title>
+                  </v-list-item>
+                  <v-list-item prepend-icon="mdi-account-plus-outline" @click="openInvite(meta)">
+                    <v-list-item-title>{{ t('workspace.invite') }}</v-list-item-title>
                   </v-list-item>
                   <template v-if="meta.storage.kind !== 'local'">
                     <v-list-item prepend-icon="mdi-cloud-download-outline" @click="sync(meta.id, 'pull')">
@@ -207,16 +247,60 @@ async function confirmRename() {
       </v-alert>
   </v-container>
 
-  <v-dialog v-model="renameDialog.open" max-width="420">
+  <!-- Çalışma alanını düzenle: ad + görünürlük -->
+  <v-dialog v-model="editDialog.open" max-width="480">
     <v-card class="pa-2">
-      <v-card-title class="text-h6">{{ t('workspace.rename') }}</v-card-title>
+      <v-card-title class="text-h6">{{ t('workspace.editTitle') }}</v-card-title>
       <v-card-text>
-        <v-text-field v-model="renameDialog.value" :placeholder="t('workspace.namePlaceholder')" density="comfortable" hide-details autofocus @keyup.enter="confirmRename" />
+        <div class="text-caption text-medium-emphasis mb-1">{{ t('workspace.nameLabel') }}</div>
+        <v-text-field
+          v-model="editDialog.name"
+          :placeholder="t('workspace.namePlaceholder')"
+          density="comfortable"
+          hide-details
+          autofocus
+          class="mb-4"
+          @keyup.enter="confirmEdit"
+        />
+        <div class="text-caption text-medium-emphasis mb-1">{{ t('workspace.visibilityLabel') }}</div>
+        <v-chip-group v-model="editDialog.type" selected-class="text-primary" mandatory>
+          <v-chip v-for="opt in visibilityOptions" :key="opt.value" :value="opt.value" :prepend-icon="opt.icon" variant="tonal" filter>
+            {{ opt.title }}
+          </v-chip>
+        </v-chip-group>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn variant="text" class="text-none" @click="renameDialog.open = false">{{ t('actions.cancel') }}</v-btn>
-        <v-btn color="primary" variant="flat" class="text-none" @click="confirmRename">{{ t('actions.save') }}</v-btn>
+        <v-btn variant="text" class="text-none" @click="editDialog.open = false">{{ t('actions.cancel') }}</v-btn>
+        <v-btn color="primary" variant="flat" class="text-none" :disabled="!editDialog.name.trim()" @click="confirmEdit">
+          {{ t('actions.save') }}
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <!-- Ekibi davet et: depolama türüne göre paylaşım bilgisi -->
+  <v-dialog v-model="inviteDialog.open" max-width="560">
+    <v-card class="pa-2">
+      <v-card-title class="text-h6">{{ t('workspace.invite') }}</v-card-title>
+      <v-card-text>
+        <p class="text-body-2 text-medium-emphasis mb-4">{{ inviteHint }}</p>
+        <div class="d-flex ga-2 align-center">
+          <v-text-field :model-value="inviteValue" readonly density="compact" hide-details class="antiphon-mono" />
+          <v-btn
+            variant="tonal"
+            class="text-none flex-shrink-0"
+            :prepend-icon="copied ? 'mdi-check' : 'mdi-content-copy'"
+            :disabled="!inviteValue"
+            @click="copyInvite"
+          >
+            {{ copied ? t('workspace.copied') : t('workspace.copy') }}
+          </v-btn>
+        </div>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn variant="text" class="text-none" @click="inviteDialog.open = false">{{ t('actions.cancel') }}</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -230,11 +314,9 @@ async function confirmRename() {
   color: rgb(var(--v-theme-on-surface));
   opacity: 0.6;
 }
+/* Satır hover arka planı global VTable hover varsayılanından gelir. */
 .antiphon-ws-row {
   cursor: pointer;
-}
-.antiphon-ws-row:hover {
-  background: rgba(var(--v-theme-on-surface), 0.04);
 }
 .antiphon-ws-row--active {
   background: rgba(var(--v-theme-primary), 0.05);

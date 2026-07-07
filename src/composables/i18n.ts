@@ -10,7 +10,10 @@ export type TranslationKey = MessageKey<typeof trMessages>
 
 type BaseI18n = ReturnType<typeof useVueI18n>
 // Aynı Composer; yalnızca t()'nin anahtar parametresi şema anahtarlarına daraltılır.
-type TypedI18n = Omit<BaseI18n, 't'> & { t: (key: TranslationKey) => string }
+// İkinci parametre, "{n} kayıt" gibi mesajlardaki adlandırılmış interpolasyon değerleridir.
+type TypedI18n = Omit<BaseI18n, 't'> & {
+  t: (key: TranslationKey, values?: Record<string, string | number>) => string
+}
 
 // Tip-güvenli useI18n: t() yalnızca GEÇERLİ mesaj anahtarlarını kabul eder — geçersiz/typo
 // anahtar artık gerçek bir DERLEME hatasıdır (vue-i18n'in izin veren string overload'unu kapatır).

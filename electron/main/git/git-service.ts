@@ -89,13 +89,20 @@ export async function commit(dir: string, message: string, authorName: string, a
 }
 
 export async function getLog(dir: string, depth = 30): Promise<GitCommitSummary[]> {
-  const commits = await git.log({ fs, dir, depth })
-  return commits.map((c) => ({
-    oid: c.oid,
-    message: c.commit.message,
-    author: c.commit.author.name,
-    timestamp: c.commit.author.timestamp * 1000
-  }))
+  try {
+    const commits = await git.log({ fs, dir, depth })
+    return commits.map((c) => ({
+      oid: c.oid,
+      message: c.commit.message,
+      author: c.commit.author.name,
+      timestamp: c.commit.author.timestamp * 1000
+    }))
+  } catch (error) {
+    // Taze depo (henüz commit yok): HEAD'in gösterdiği dal ref'i ilk commit'e kadar
+    // var olmaz; isomorphic-git NotFoundError fırlatır. Boş geçmiş normaldir.
+    if ((error as { code?: string }).code === 'NotFoundError') return []
+    throw error
+  }
 }
 
 export async function diffFile(dir: string, filepath: string): Promise<string> {

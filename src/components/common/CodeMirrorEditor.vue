@@ -24,9 +24,11 @@ const props = withDefaults(
     language?: Language
     placeholder?: string
     readOnly?: boolean
+    /** Uzun satırları kaydır (yanıt görüntüleyici gibi salt-okunur kullanımlar için). */
+    wrap?: boolean
     graphqlSchema?: unknown
   }>(),
-  { language: 'text', placeholder: '', readOnly: false, graphqlSchema: undefined }
+  { language: 'text', placeholder: '', readOnly: false, wrap: false, graphqlSchema: undefined }
 )
 
 const typedGraphqlSchema = () => props.graphqlSchema as GraphQLSchema | undefined
@@ -66,6 +68,7 @@ function buildExtensions(): Extension[] {
     EditorView.editable.of(!props.readOnly)
   ]
   if (props.placeholder) extensions.push(cmPlaceholder(props.placeholder))
+  if (props.wrap) extensions.push(EditorView.lineWrapping)
   if (uiStore.themeName === 'antiphonDark') extensions.push(oneDark)
   return extensions
 }
@@ -86,6 +89,7 @@ onBeforeUnmount(() => view.value?.destroy())
 defineExpose({ view })
 
 watch(() => props.language, createEditor)
+watch(() => props.wrap, createEditor)
 watch(() => uiStore.themeName, createEditor)
 watch(
   () => props.graphqlSchema,

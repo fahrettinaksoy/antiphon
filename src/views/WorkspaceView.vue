@@ -2,13 +2,16 @@
 import { computed } from 'vue'
 import { useEventListener } from '@vueuse/core'
 import TabBar from '../components/layout/TabBar.vue'
+import WorkspaceToolbar from '../components/layout/WorkspaceToolbar.vue'
 import TabContentView from '../components/layout/TabContentView.vue'
 import AppEmptyState from '../components/common/AppEmptyState.vue'
 import { useTabsStore } from '../stores/tabs'
 import { useWorkspaceStore } from '../stores/workspace'
+import { useUiStore } from '../stores/ui'
 
 const tabsStore = useTabsStore()
 const workspaceStore = useWorkspaceStore()
+const uiStore = useUiStore()
 
 const otherOpenTabs = computed(() => tabsStore.tabs.filter((t) => t.id !== tabsStore.activeTabId))
 
@@ -25,10 +28,14 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 's') {
     event.preventDefault()
     const active = tabsStore.activeTab
-    if (active) {
-      tabsStore.markDirty(active.id)
-      tabsStore.saveTab(active.id)
+    if (!active) return
+    // Dosyası olmayan (boşta) istek: konum seçtiren "İsteği Kaydet" çekmecesini aç.
+    if (!active.requestPath && active.kind === 'request') {
+      uiStore.openSaveRequest(active.id)
+      return
     }
+    tabsStore.markDirty(active.id)
+    tabsStore.saveTab(active.id)
   }
 })
 </script>
@@ -37,6 +44,7 @@ useEventListener('keydown', (event: KeyboardEvent) => {
   <!-- Kabuk (app bar + sol gezinme) App.vue'da; burada yalnızca sekmeler ve içerik var.
        Yükseklik, Vuetify layout değişkeniyle üst barlara otomatik uyum sağlar. -->
   <div class="d-flex flex-column antiphon-workspace-page">
+      <WorkspaceToolbar />
       <TabBar />
 
       <v-row v-if="tabsStore.activeTab" no-gutters class="flex-grow-1 overflow-hidden">
@@ -66,15 +74,18 @@ useEventListener('keydown', (event: KeyboardEvent) => {
         </template>
       </v-row>
 
-      <AppEmptyState
-        v-else
-        icon="mdi-send-outline"
-        title="Açık istek yok"
-        text="Başlamak için yeni bir istek oluşturun veya kenar çubuğundan bir istek seçin"
-        action-text="Yeni İstek"
-        action-icon="mdi-plus"
-        @action="createFirstRequest"
-      />
+      <!-- Sarmalayıcı: boş durum kalan alanı kullanır, üstteki şeritleri (toolbar/tab) ezmez. -->
+      <div v-else class="flex-grow-1 d-flex overflow-hidden" style="min-height: 0">
+        <AppEmptyState
+          class="flex-grow-1"
+          icon="mdi-send-outline"
+          title="Açık istek yok"
+          text="Başlamak için yeni bir istek oluşturun veya kenar çubuğundan bir istek seçin"
+          action-text="Yeni İstek"
+          action-icon="mdi-plus"
+          @action="createFirstRequest"
+        />
+      </div>
   </div>
 </template>
 

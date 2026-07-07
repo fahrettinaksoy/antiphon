@@ -131,7 +131,7 @@ export async function runCollectionItem(item: CollectionRequestItem, options: Co
       headers: response.headers,
       body: response.body,
       bodyEncoding: 'utf8',
-      timing: { dns: 0, tcp: 0, tls: 0, ttfb: 0, download: 0, total: durationMs },
+      timing: { prepare: 0, socketInit: 0, dns: 0, tcp: 0, tls: 0, ttfb: 0, download: 0, process: 0, total: durationMs },
       sizeBytes: response.body.length
     })
 

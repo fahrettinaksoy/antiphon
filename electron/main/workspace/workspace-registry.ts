@@ -5,7 +5,8 @@ import { randomUUID } from 'node:crypto'
 import type {
   CreateWorkspaceInput,
   WorkspaceMetaDto,
-  WorkspaceSyncDirection
+  WorkspaceSyncDirection,
+  WorkspaceUpdateInput
 } from '@shared/ipc-contract'
 import { getSecret, setSecret, deleteSecret } from '../vault/secret-vault'
 import { buildSnapshot, applySnapshot, parseSnapshot } from './storage/snapshot'
@@ -183,6 +184,16 @@ export async function renameWorkspace(id: string, name: string): Promise<void> {
     target.name = name
     await writeRegistry(reg)
   }
+}
+
+// Ad ve/veya görünürlük güncellemesi (Çalışma Alanını Düzenle diyaloğu).
+export async function updateWorkspace(id: string, patch: WorkspaceUpdateInput): Promise<void> {
+  const reg = await ensureDefaultWorkspace()
+  const target = reg.workspaces.find((w) => w.id === id)
+  if (!target) return
+  if (patch.name?.trim()) target.name = patch.name.trim()
+  if (patch.type) target.type = patch.type
+  await writeRegistry(reg)
 }
 
 export async function setActiveWorkspace(id: string): Promise<WorkspaceMetaDto | null> {

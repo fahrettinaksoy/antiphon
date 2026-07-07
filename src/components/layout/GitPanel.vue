@@ -1,12 +1,16 @@
 <script setup lang="ts">
 import { ipc } from '@/lib/ipc'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from '@/composables/i18n'
 import { useGitStore } from '../../stores/git'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useGitIdentityStore } from '../../stores/git-identity'
 import { useFormat } from '../../composables/useFormat'
 import GitCredentialsDialog from './GitCredentialsDialog.vue'
+import SidebarSection from '../sidebar/SidebarSection.vue'
+import AppEmptyState from '../common/AppEmptyState.vue'
 
+const { t } = useI18n()
 const gitStore = useGitStore()
 const workspaceStore = useWorkspaceStore()
 const gitIdentityStore = useGitIdentityStore()
@@ -91,104 +95,150 @@ function statusColor(status: string): string {
 </script>
 
 <template>
-  <div class="d-flex flex-column h-100">
-    <div class="d-flex align-center justify-space-between px-3 py-2">
-      <span class="text-caption text-medium-emphasis text-uppercase font-weight-bold">Git</span>
-      <v-btn icon="mdi-refresh" size="x-small" variant="text" @click="workspaceStore.rootPath && gitStore.refresh(workspaceStore.rootPath)" />
-    </div>
-    <v-divider />
+  <!-- Standart bölüm iskeleti: header (başlık + sayaç + yenile) / gövde / footer (commit formu).
+       Başlık "GIT" önceden büyük yazılır — Türkçe i→İ dönüşümüne takılmaz. -->
+  <SidebarSection title="GIT" :count="gitStore.status?.files.length || undefined">
+    <template #actions>
+      <v-btn
+        icon="mdi-refresh"
+        size="x-small"
+        variant="text"
+        :title="t('git.refresh')"
+        @click="workspaceStore.rootPath && gitStore.refresh(workspaceStore.rootPath)"
+      />
+    </template>
 
-    <div v-if="!workspaceStore.isOpen" class="pa-4 text-caption text-medium-emphasis">Önce bir çalışma alanı açın.</div>
+    <p v-if="!workspaceStore.isOpen" class="pa-4 text-caption text-medium-emphasis">{{ t('git.noWorkspace') }}</p>
 
-    <div v-else-if="!gitStore.isRepo" class="pa-4 d-flex flex-column align-center text-center ga-2">
-      <v-icon icon="mdi-source-branch" size="32" class="text-medium-emphasis" />
-      <p class="text-body-2 text-medium-emphasis">Bu çalışma alanı bir Git deposu değil.</p>
-      <v-btn size="small" variant="tonal" color="primary" class="text-none" @click="initRepo">Git Deposu Başlat</v-btn>
-    </div>
+    <AppEmptyState
+      v-else-if="!gitStore.isRepo"
+      size="compact"
+      icon="mdi-source-branch"
+      :title="t('git.notRepo')"
+      :text="t('git.notRepoHint')"
+      :action-text="t('git.initRepo')"
+      action-icon="mdi-source-branch-plus"
+      @action="initRepo"
+    />
 
     <template v-else>
-      <div class="d-flex align-center ga-2 px-3 py-2">
-        <v-chip size="small" variant="tonal" prepend-icon="mdi-source-branch">{{ gitStore.status?.branch ?? '—' }}</v-chip>
+      <!-- Dal + uzak eşitleme eylemleri -->
+      <div class="d-flex align-center ga-2 px-3 pb-2">
+        <v-chip size="small" variant="tonal" prepend-icon="mdi-source-branch" class="antiphon-mono">
+          {{ gitStore.status?.branch ?? '—' }}
+        </v-chip>
         <v-spacer />
-        <v-btn size="small" variant="text" :loading="gitStore.isSyncing" prepend-icon="mdi-arrow-down" class="text-none" @click="requestSync('pull')">
-          Pull
+        <v-btn
+          size="small"
+          variant="tonal"
+          :loading="gitStore.isSyncing"
+          prepend-icon="mdi-arrow-down"
+          class="text-none"
+          @click="requestSync('pull')"
+        >
+          {{ t('git.pull') }}
         </v-btn>
-        <v-btn size="small" variant="text" :loading="gitStore.isSyncing" prepend-icon="mdi-arrow-up" class="text-none" @click="requestSync('push')">
-          Push
+        <v-btn
+          size="small"
+          variant="tonal"
+          :loading="gitStore.isSyncing"
+          prepend-icon="mdi-arrow-up"
+          class="text-none"
+          @click="requestSync('push')"
+        >
+          {{ t('git.push') }}
         </v-btn>
       </div>
-      <v-tabs v-model="activeTab" density="compact">
-        <v-tab value="changes">Değişiklikler</v-tab>
-        <v-tab value="log">Geçmiş</v-tab>
-      </v-tabs>
-      <v-divider />
 
-      <v-window v-model="activeTab" class="flex-grow-1 overflow-hidden">
+      <v-tabs v-model="activeTab" density="compact" class="px-2">
+        <v-tab value="changes">
+          {{ t('git.changes') }}
+          <span v-if="gitStore.status?.files.length" class="antiphon-tab-count">{{ gitStore.status.files.length }}</span>
+        </v-tab>
+        <v-tab value="log">{{ t('git.history') }}</v-tab>
+      </v-tabs>
+
+      <v-window v-model="activeTab" class="flex-grow-1 overflow-hidden antiphon-git-window">
         <v-window-item value="changes" class="h-100 d-flex flex-column overflow-hidden">
           <div class="flex-grow-1 overflow-y-auto">
-            <div v-if="unstagedFiles.length > 0" class="px-3 py-1 d-flex align-center justify-space-between">
-              <span class="text-caption font-weight-bold text-medium-emphasis">DEĞİŞİKLİKLER</span>
-              <v-btn size="x-small" variant="text" class="text-none" @click="stageAll">Tümünü Sahnele</v-btn>
-            </div>
-            <div
-              v-for="file in unstagedFiles"
-              :key="file.path"
-              class="d-flex align-center ga-2 px-3 py-1 antiphon-git-row"
-              @click="viewDiff(file.path)"
-            >
-              <v-chip size="x-small" :color="statusColor(file.status)" variant="tonal" class="antiphon-mono" style="min-width: 30px">
-                {{ file.status.charAt(0).toUpperCase() }}
-              </v-chip>
-              <span class="text-body-2 text-truncate flex-grow-1">{{ file.path }}</span>
-              <v-btn icon="mdi-plus" size="x-small" variant="text" @click.stop="stageOrUnstage(file.path, false)" />
-            </div>
+            <AppEmptyState
+              v-if="!gitStore.status?.files.length"
+              size="compact"
+              icon="mdi-check-decagram-outline"
+              :title="t('git.noChanges')"
+            />
 
-            <div v-if="stagedFiles.length > 0" class="px-3 py-1 text-caption font-weight-bold text-medium-emphasis mt-2">
-              SAHNELENDİ
-            </div>
-            <div
-              v-for="file in stagedFiles"
-              :key="file.path"
-              class="d-flex align-center ga-2 px-3 py-1 antiphon-git-row"
-              @click="viewDiff(file.path)"
-            >
-              <v-chip size="x-small" color="success" variant="tonal" class="antiphon-mono" style="min-width: 30px">
-                {{ file.status.charAt(0).toUpperCase() }}
-              </v-chip>
-              <span class="text-body-2 text-truncate flex-grow-1">{{ file.path }}</span>
-              <v-btn icon="mdi-minus" size="x-small" variant="text" @click.stop="stageOrUnstage(file.path, true)" />
-            </div>
+            <template v-if="unstagedFiles.length > 0">
+              <div class="px-3 py-1 d-flex align-center">
+                <span class="antiphon-git-group">{{ t('git.unstagedTitle') }}</span>
+                <v-chip size="x-small" variant="tonal" class="ml-2">{{ unstagedFiles.length }}</v-chip>
+                <v-spacer />
+                <v-btn size="x-small" variant="text" class="text-none" @click="stageAll">{{ t('git.stageAll') }}</v-btn>
+              </div>
+              <div
+                v-for="file in unstagedFiles"
+                :key="file.path"
+                class="d-flex align-center ga-2 px-3 py-1 antiphon-git-row"
+                @click="viewDiff(file.path)"
+              >
+                <v-chip size="x-small" :color="statusColor(file.status)" variant="tonal" class="antiphon-mono justify-center" style="min-width: 30px">
+                  {{ file.status.charAt(0).toUpperCase() }}
+                </v-chip>
+                <span class="text-body-2 text-truncate flex-grow-1">{{ file.path }}</span>
+                <v-btn
+                  icon="mdi-plus"
+                  size="x-small"
+                  variant="text"
+                  class="antiphon-git-row__action"
+                  :title="t('git.stage')"
+                  @click.stop="stageOrUnstage(file.path, false)"
+                />
+              </div>
+            </template>
 
-            <p v-if="!gitStore.status?.files.length" class="text-caption text-disabled pa-3">Değişiklik yok, çalışma dizini temiz.</p>
+            <template v-if="stagedFiles.length > 0">
+              <div class="px-3 py-1 d-flex align-center mt-2">
+                <span class="antiphon-git-group">{{ t('git.stagedTitle') }}</span>
+                <v-chip size="x-small" color="success" variant="tonal" class="ml-2">{{ stagedFiles.length }}</v-chip>
+              </div>
+              <div
+                v-for="file in stagedFiles"
+                :key="file.path"
+                class="d-flex align-center ga-2 px-3 py-1 antiphon-git-row"
+                @click="viewDiff(file.path)"
+              >
+                <v-chip size="x-small" color="success" variant="tonal" class="antiphon-mono justify-center" style="min-width: 30px">
+                  {{ file.status.charAt(0).toUpperCase() }}
+                </v-chip>
+                <span class="text-body-2 text-truncate flex-grow-1">{{ file.path }}</span>
+                <v-btn
+                  icon="mdi-minus"
+                  size="x-small"
+                  variant="text"
+                  class="antiphon-git-row__action"
+                  :title="t('git.unstage')"
+                  @click.stop="stageOrUnstage(file.path, true)"
+                />
+              </div>
+            </template>
 
-            <v-divider class="my-2" />
-            <div v-if="gitStore.diffText" class="pa-2">
-              <div class="text-caption font-weight-bold text-medium-emphasis mb-1">{{ gitStore.selectedFile }}</div>
-              <pre class="antiphon-mono antiphon-diff text-caption">
-                <div v-for="(line, i) in diffLines" :key="i" :class="`antiphon-diff-${line.kind}`">{{ line.text }}</div>
-              </pre>
-            </div>
-          </div>
-
-          <v-divider />
-          <div class="pa-3">
-            <v-textarea v-model="commitMessage" label="Commit mesajı" placeholder="Değişiklikleri kısaca özetleyin…" rows="2" density="compact" hide-details />
-            <v-btn
-              class="mt-2 text-none"
-              color="primary"
-              variant="flat"
-              block
-              :disabled="!commitMessage.trim() || stagedFiles.length === 0"
-              @click="commitChanges"
-            >
-              Commit ({{ stagedFiles.length }})
-            </v-btn>
+            <!-- Seçili dosyanın farkı — tonal kart -->
+            <v-card v-if="gitStore.diffText" variant="tonal" class="ma-3 pa-3">
+              <div class="text-caption font-weight-bold text-medium-emphasis mb-1 antiphon-mono text-truncate">
+                {{ gitStore.selectedFile }}
+              </div>
+              <pre class="antiphon-mono antiphon-diff text-caption"><div v-for="(line, i) in diffLines" :key="i" :class="`antiphon-diff-${line.kind}`">{{ line.text }}</div></pre>
+            </v-card>
           </div>
         </v-window-item>
 
         <v-window-item value="log" class="h-100 overflow-y-auto">
-          <v-list density="compact">
+          <AppEmptyState v-if="gitStore.log.length === 0" size="compact" icon="mdi-history" :title="t('git.noCommits')" />
+          <v-list v-else density="compact" bg-color="transparent">
             <v-list-item v-for="entry in gitStore.log" :key="entry.oid">
+              <template #prepend>
+                <v-icon icon="mdi-source-commit" size="18" class="mr-2 text-medium-emphasis" />
+              </template>
               <v-list-item-title class="text-body-2">{{ entry.message }}</v-list-item-title>
               <v-list-item-subtitle class="text-caption antiphon-mono">
                 {{ entry.oid.slice(0, 7) }} · {{ entry.author }} · {{ fmt.date(entry.timestamp) }}
@@ -199,16 +249,60 @@ function statusColor(status: string): string {
       </v-window>
     </template>
 
+    <!-- Footer: commit formu (yalnızca Değişiklikler sekmesinde) -->
+    <template v-if="gitStore.isRepo && workspaceStore.isOpen && activeTab === 'changes'" #footer>
+      <v-textarea
+        v-model="commitMessage"
+        :label="t('git.commitMessage')"
+        :placeholder="t('git.commitPlaceholder')"
+        rows="2"
+        density="compact"
+        hide-details
+      />
+      <v-btn
+        class="mt-2 text-none"
+        color="primary"
+        variant="flat"
+        block
+        :disabled="!commitMessage.trim() || stagedFiles.length === 0"
+        @click="commitChanges"
+      >
+        Commit
+        <span v-if="stagedFiles.length" class="antiphon-tab-count">{{ stagedFiles.length }}</span>
+      </v-btn>
+    </template>
+
     <GitCredentialsDialog v-model="credentialsDialogOpen" @confirm="handleCredentialsConfirm" />
-  </div>
+  </SidebarSection>
 </template>
 
 <style scoped>
+.antiphon-git-group {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(var(--v-theme-on-surface), 0.6);
+}
 .antiphon-git-row {
   cursor: pointer;
+  border-radius: 8px;
+  margin-inline: 4px;
 }
 .antiphon-git-row:hover {
-  background-color: rgba(128, 128, 128, 0.08);
+  background-color: rgba(var(--v-theme-on-surface), 0.06);
+}
+/* Sahnele/çıkar butonu yalnızca satır üzerine gelince görünür. */
+.antiphon-git-row__action {
+  opacity: 0;
+}
+.antiphon-git-row:hover .antiphon-git-row__action {
+  opacity: 1;
+}
+/* v-window yüksekliği iletmez; sekme içerikleri tam yükseklik ister. */
+.antiphon-git-window :deep(.v-window__container),
+.antiphon-git-window :deep(.v-window-item) {
+  height: 100%;
 }
 .antiphon-diff {
   white-space: pre-wrap;

@@ -3,6 +3,7 @@ export default {
     name: 'Antiphon'
   },
   header: {
+    toggleSidebar: 'Kenar çubuğunu göster/gizle',
     home: 'Ana Sayfa',
     workspaces: 'Çalışma Alanı',
     import: 'İçe Aktar',
@@ -39,6 +40,9 @@ export default {
     searchEnvironments: 'Ortamlarda ara…',
     searchHistory: 'Geçmişte ara…',
     activeEnvironment: 'Aktif ortam',
+    today: 'Bugün',
+    yesterday: 'Dün',
+    entryCount: 'Toplam {n} kayıt',
     newMenu: {
       groupAi: 'Yapay Zeka',
       groupRequests: 'İstek Türleri',
@@ -79,6 +83,17 @@ export default {
     delete: 'Sil',
     open: 'Aç',
     rename: 'Yeniden Adlandır',
+    edit: 'Düzenle',
+    editTitle: 'Çalışma Alanını Düzenle',
+    invite: 'Ekibi Davet Et',
+    inviteLocalHint:
+      'Bu çalışma alanı yerel bir klasördür. Klasörü bir git deposuna push\'layıp ekibinizle paylaşın; ekip arkadaşlarınız "Mevcut klasöre bağlan" ile aynı alanı açabilir.',
+    inviteGistHint:
+      'Ekip arkadaşlarınız, kendi GitHub token\'ları ve aşağıdaki Gist ID ile yeni bir çalışma alanı oluşturarak bu alana bağlanabilir.',
+    inviteWebdavHint:
+      'Ekip arkadaşlarınız, aşağıdaki WebDAV adresi ve kendi kimlik bilgileriyle yeni bir çalışma alanı oluşturarak bu alana bağlanabilir.',
+    copy: 'Kopyala',
+    copied: 'Kopyalandı',
     you: 'Sen',
     activeBadge: 'Aktif',
     noResults: 'Çalışma alanı bulunamadı',
@@ -141,6 +156,60 @@ export default {
     urlPlaceholder: 'İstek URL\'sini girin veya bir cURL yapıştırın',
     tabs: { params: 'Parametreler', headers: 'Başlıklar', body: 'Gövde', auth: 'Kimlik Doğrulama', scripts: 'Script\'ler', docs: 'Dokümantasyon', settings: 'Ayarlar' }
   },
+  // İsteği kaydet çekmecesi
+  saveRequest: {
+    title: 'İsteği Kaydet',
+    nameLabel: 'İstek adı',
+    saveTo: 'Kaydedilecek yer:',
+    searchPlaceholder: 'Koleksiyon veya klasör ara…',
+    newFolder: 'Yeni Klasör',
+    noFolders: 'Henüz koleksiyon yok — istek çalışma alanı köküne kaydedilir.'
+  },
+  // Ana sayfa
+  home: {
+    title: 'Ana Sayfa',
+    latestActivity: 'Son etkinlik',
+    noActivity: 'Henüz etkinlik yok',
+    noActivityHint: 'Bir istek gönderdiğinizde burada görünür.',
+    favorites: 'Favoriler',
+    noFavorites: 'Henüz favori yok',
+    noFavoritesHint: 'Çalışma Alanları sayfasında yıldız ikonuyla favorileyin.',
+    recentWorkspaces: 'Son kullanılanlar',
+    viewAll: 'Tümünü gör'
+  },
+  // Git paneli
+  git: {
+    refresh: 'Yenile',
+    pull: 'Çek',
+    push: 'Gönder',
+    changes: 'Değişiklikler',
+    history: 'Geçmiş',
+    unstagedTitle: 'Değişiklikler',
+    stagedTitle: 'Sahnelenenler',
+    stageAll: 'Tümünü sahnele',
+    stage: 'Sahnele',
+    unstage: 'Sahneden çıkar',
+    commitMessage: 'Commit mesajı',
+    commitPlaceholder: 'Değişiklikleri kısaca özetleyin…',
+    noChanges: 'Değişiklik yok — çalışma dizini temiz',
+    noCommits: 'Henüz commit yok',
+    notRepo: 'Bu çalışma alanı bir Git deposu değil',
+    notRepoHint: 'Sürüm geçmişi tutmak için bir depo başlatın.',
+    initRepo: 'Git Deposu Başlat',
+    noWorkspace: 'Önce bir çalışma alanı açın.'
+  },
+  // Ortam düzenleyici sekmesi
+  environment: {
+    subtitle: 'Ortam değişkenleri — istek URL, başlık ve gövdelerinde çift süslü parantezle kullanılır',
+    variables: 'Değişkenler',
+    variablesHint: 'Anahtar/değer çiftleri; kaydetme otomatiktir.',
+    makeActive: 'Aktif Yap',
+    active: 'Aktif',
+    newTitle: 'Yeni Ortam',
+    delete: 'Sil',
+    editSelected: 'Seçili ortamı düzenle',
+    selectFirst: 'Önce bir ortam seçin'
+  },
   // Koleksiyon, klasör ve istek editörlerinin ortak kimlik doğrulama paneli
   auth: {
     type: 'Kimlik doğrulama türü',
@@ -154,9 +223,53 @@ export default {
     inheritHint: 'Kimlik doğrulama üst klasörden/koleksiyondan devralınır; hiçbir üst öğede tanımlı değilse uygulanmaz.'
   },
   response: {
-    tabs: { body: 'Gövde', headers: 'Başlıklar', cookies: 'Çerezler', timing: 'Zamanlama', tests: 'Testler' },
+    tabs: { body: 'Gövde', headers: 'Başlıklar', cookies: 'Çerezler', tests: 'Testler' },
     waiting: 'Yanıt bekleniyor',
-    placeholder: 'Yanıtı görmek için bir istek gönderin'
+    placeholder: 'Yanıtı görmek için bir istek gönderin',
+    viewText: 'Metin',
+    viewTree: 'Ağaç',
+    wrap: 'Satır kaydırma',
+    copy: 'Kopyala',
+    copied: 'Kopyalandı',
+    binaryBody: 'İkili (binary) içerik — metin olarak gösterilemiyor.',
+    filter: 'Filtrele',
+    filterPlaceholder: 'JSONPath ile filtrele — ör. $.result.head',
+    search: 'Ara',
+    noMatch: 'Eşleşme yok',
+    props: 'özellik',
+    items: 'öğe',
+    cookieAttributes: 'Öznitelikler',
+    noCookies: 'Sunucudan çerez gelmedi',
+    noCookiesHint: 'Bu isteğin çerezleri ve ilişkili alan adları burada görünür.',
+    noTests: 'Test tanımlanmadı',
+    noTestsHint: "Script'ler sekmesinde pm.test(...) ile test yazın.",
+    status2xx: 'İstek başarılı — sunucu beklendiği gibi yanıt verdi.',
+    status3xx: 'Yönlendirme — kaynak başka bir adreste.',
+    status4xx: 'İstemci hatası — istek sunucu tarafından reddedildi.',
+    status5xx: 'Sunucu hatası — sunucu isteği işleyemedi.',
+    responseTime: 'Yanıt Süresi',
+    timingPrepare: 'Hazırlık',
+    timingSocket: 'Soket Başlatma',
+    timingDns: 'DNS Sorgusu',
+    timingTcp: 'TCP El Sıkışma',
+    timingTls: 'SSL/TLS El Sıkışma',
+    timingTtfb: 'İlk Bayt (TTFB)',
+    timingDownload: 'İndirme',
+    timingProcess: 'İşleme',
+    timingTotal: 'Toplam',
+    responseSize: 'Yanıt Boyutu',
+    requestSize: 'İstek Boyutu',
+    sizeHeaders: 'Başlıklar',
+    sizeBody: 'Gövde',
+    network: 'Ağ',
+    httpVersion: 'HTTP Sürümü',
+    localAddress: 'Yerel Adres',
+    remoteAddress: 'Uzak Adres',
+    tlsProtocol: 'TLS Protokolü',
+    cipherName: 'Şifre Takımı',
+    certCn: 'Sertifika CN',
+    certIssuerCn: 'Veren CN',
+    certValidUntil: 'Geçerlilik Sonu'
   },
   palette: {
     placeholder: 'Bir komut yazın veya arayın…'

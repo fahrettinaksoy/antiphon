@@ -31,15 +31,33 @@ export interface HttpResponsePayload {
   body: string
   bodyEncoding: 'utf8' | 'base64'
   timing: {
+    prepare: number
+    socketInit: number
     dns: number
     tcp: number
     tls: number
     ttfb: number
     download: number
+    process: number
     total: number
   }
   sizeBytes: number
   testResults?: TestResultDto[]
+  /** Gönderilen isteğin yaklaşık boyutu (başlıklar + gövde, bayt). */
+  requestSize?: { headers: number; body: number }
+  /** Bağlantı/TLS bilgisi — en-iyi-çaba ile doldurulur (HTTP/2'de bazı alanlar boş olabilir). */
+  network?: NetworkInfoDto
+}
+
+export interface NetworkInfoDto {
+  httpVersion?: string
+  localAddress?: string
+  remoteAddress?: string
+  tlsProtocol?: string
+  cipherName?: string
+  certCn?: string
+  certIssuerCn?: string
+  certValidUntil?: string
 }
 
 export interface WorkspaceNode {
@@ -94,6 +112,12 @@ export interface OpenWorkspaceResult {
 }
 
 export type WorkspaceSyncDirection = 'push' | 'pull'
+
+/** Çalışma alanı düzenleme yaması: yalnızca verilen alanlar güncellenir. */
+export interface WorkspaceUpdateInput {
+  name?: string
+  type?: WorkspaceVisibility
+}
 
 export type Platform = 'aix' | 'android' | 'darwin' | 'freebsd' | 'haiku' | 'linux' | 'openbsd' | 'sunos' | 'win32' | 'cygwin' | 'netbsd'
 
@@ -279,6 +303,7 @@ export const IpcChannels = {
   workspaceRegistryOpen: 'workspace:registry-open',
   workspaceRegistryDelete: 'workspace:registry-delete',
   workspaceRegistryRename: 'workspace:registry-rename',
+  workspaceRegistryUpdate: 'workspace:registry-update',
   workspaceRegistrySync: 'workspace:registry-sync',
   workspacePickDirectory: 'workspace:pick-directory',
   workspaceWatch: 'workspace:watch-changed',
@@ -357,6 +382,7 @@ export interface AntiphonApi {
   openWorkspaceById(id: string): Promise<OpenWorkspaceResult | null>
   deleteWorkspace(id: string): Promise<WorkspaceMetaDto[]>
   renameWorkspace(id: string, name: string): Promise<void>
+  updateWorkspace(id: string, patch: WorkspaceUpdateInput): Promise<void>
   syncWorkspace(id: string, direction: WorkspaceSyncDirection): Promise<WorkspaceNode | null>
   pickDirectory(): Promise<string | null>
   sendRequest(payload: HttpRequestPayload): Promise<HttpResponsePayload>

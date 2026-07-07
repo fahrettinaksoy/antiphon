@@ -21,18 +21,18 @@ interface TreeItem {
   children?: TreeItem[]
 }
 
-// HTTP method rozeti için renk (Postman benzeri).
-const METHOD_COLORS: Record<string, string> = {
-  GET: '#4CAF50',
-  POST: '#FF9800',
-  PUT: '#2196F3',
-  PATCH: '#9C27B0',
-  DELETE: '#F44336',
-  HEAD: '#00BCD4',
-  OPTIONS: '#795548'
+// HTTP method rozeti rengi TEMA token'larından gelir (method-get/post/…) — böylece
+// açık/koyu ve yüksek kontrast temalarının tamamına otomatik uyar.
+const METHOD_TOKENS: Record<string, string> = {
+  GET: 'method-get',
+  POST: 'method-post',
+  PUT: 'method-put',
+  PATCH: 'method-patch',
+  DELETE: 'method-delete'
 }
 function methodColor(method?: string): string {
-  return METHOD_COLORS[(method ?? 'GET').toUpperCase()] ?? '#78909C'
+  const token = METHOD_TOKENS[(method ?? 'GET').toUpperCase()]
+  return token ? `rgb(var(--v-theme-${token}))` : `rgb(var(--v-theme-secondary))`
 }
 
 const { t } = useI18n()
@@ -46,7 +46,7 @@ const items = computed(() => (workspaceStore.tree?.children ?? []).map((node) =>
 // Standart bölüm arama + HTTP method filtresi (SidebarSection v-model'leri).
 const search = ref('')
 const methodFilter = ref<string[]>([])
-const methodFilterOptions = Object.keys(METHOD_COLORS).map((m) => ({ title: m, value: m }))
+const methodFilterOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map((m) => ({ title: m, value: m }))
 
 // Ağacı arama metni ve method filtresine göre daralt. Başlığı eşleşen klasörün altı
 // daraltılmaz (yalnızca method filtresi uygulanır); eşleşen çocuğu olmayan dallar gizlenir.

@@ -16,6 +16,7 @@ import type {
   WorkspaceNode,
   WorkspaceSettingsOverrideDto,
   WorkspaceSyncDirection,
+  WorkspaceUpdateInput,
   WsEvent
 } from '@shared/ipc-contract'
 import type { KeyValue } from '@schema/request'
@@ -29,6 +30,7 @@ const api: AntiphonApi = {
   openWorkspaceById: (id: string) => ipcRenderer.invoke(IpcChannels.workspaceRegistryOpen, id),
   deleteWorkspace: (id: string) => ipcRenderer.invoke(IpcChannels.workspaceRegistryDelete, id),
   renameWorkspace: (id: string, name: string) => ipcRenderer.invoke(IpcChannels.workspaceRegistryRename, id, name),
+  updateWorkspace: (id: string, patch: WorkspaceUpdateInput) => ipcRenderer.invoke(IpcChannels.workspaceRegistryUpdate, id, patch),
   syncWorkspace: (id: string, direction: WorkspaceSyncDirection) =>
     ipcRenderer.invoke(IpcChannels.workspaceRegistrySync, id, direction),
   pickDirectory: () => ipcRenderer.invoke(IpcChannels.workspacePickDirectory),

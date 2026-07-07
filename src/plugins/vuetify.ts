@@ -208,8 +208,17 @@ export const vuetify = createVuetify({
     VCombobox: { variant: 'filled', density: 'compact', hideDetails: 'auto' },
     // MD3 segmented button: çerçevesiz tonal segmentler, aralarında ince ayraç.
     VBtnToggle: { variant: 'tonal', divided: true, rounded: 'lg' },
+    // MD3 seçim kontrolleri: standart vurgu rengi PRIMARY (bileşen başına tekrar gerekmez).
+    VSwitch: { color: 'primary' },
+    VCheckbox: { color: 'primary' },
+    VCheckboxBtn: { color: 'primary' },
+    VRadioGroup: { color: 'primary' },
+    VRadio: { color: 'primary' },
+    VSlider: { color: 'primary' },
     // MD3 primary tabs: aktif sekme primary renkte metin + gösterge.
     VTabs: { density: 'compact', color: 'primary' },
+    // Tüm tablolar: sıkışık yoğunluk + satır hover geri bildirimi.
+    VTable: { density: 'compact', hover: true },
     VList: { density: 'compact' },
     VChip: { size: 'small' },
     VTooltip: { location: 'top' },

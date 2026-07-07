@@ -38,11 +38,12 @@ import {
   createWorkspace,
   deleteWorkspace,
   renameWorkspace,
+  updateWorkspace,
   setActiveWorkspace,
   syncWorkspace,
   ensureWorkspaceDir
 } from './workspace/workspace-registry'
-import type { CreateWorkspaceInput, WorkspaceMetaDto, WorkspaceSyncDirection } from '@shared/ipc-contract'
+import type { CreateWorkspaceInput, WorkspaceMetaDto, WorkspaceSyncDirection, WorkspaceUpdateInput } from '@shared/ipc-contract'
 import { parseCurlCommand } from './import-export/curl.adapter'
 import { importPostmanCollection } from './import-export/postman.adapter'
 import { importOpenapiSpec } from './import-export/openapi.adapter'
@@ -110,6 +111,8 @@ function createMainWindow(): void {
     show: false,
     autoHideMenuBar: true,
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
+    // Trafik ışıkları 64px'lik app bar'ın içinde dikey ortalanır (ayrı başlık şeridi yok).
+    trafficLightPosition: { x: 16, y: 24 },
     backgroundColor: '#1e1e2e',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -194,6 +197,14 @@ function registerIpcHandlers(): void {
     if (currentWorkspaceRoot) {
       const active = await getActiveWorkspaceId()
       if (active === id) currentWorkspaceName = name
+    }
+  })
+
+  ipcMain.handle(IpcChannels.workspaceRegistryUpdate, async (_event, id: string, patch: WorkspaceUpdateInput) => {
+    await updateWorkspace(id, patch)
+    if (patch.name && currentWorkspaceRoot) {
+      const active = await getActiveWorkspaceId()
+      if (active === id) currentWorkspaceName = patch.name
     }
   })
 

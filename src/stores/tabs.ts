@@ -3,12 +3,13 @@ import { defineStore } from 'pinia'
 import { nanoid } from 'nanoid'
 import type { Auth, Body, FolderMeta, HttpMethod, KeyValue, RequestFile, RequestSettings } from '@schema/request'
 import { SCHEMA_VERSION, defaultRequestSettings } from '@schema/request'
+import { useEnvironmentsStore } from './environments'
 
 export type { HttpMethod }
 
 export type TabProtocol = 'http' | 'ws' | 'sse' | 'graphql' | 'mcp'
-// Bir tab ya bir istek dosyasını ya da bir koleksiyonu (üst düzey klasör) düzenler.
-export type TabKind = 'request' | 'collection'
+// Bir tab bir istek dosyasını, bir koleksiyonu (üst düzey klasör) veya bir ortamı düzenler.
+export type TabKind = 'request' | 'collection' | 'environment'
 
 export interface RequestTab {
   id: string
@@ -170,6 +171,24 @@ export const useTabsStore = defineStore('tabs', {
       this.activeTabId = tab.id
       return tab
     },
+    // Ortamı ana alanda sekme olarak açar (çalışma alanı mantığı — dialog yerine).
+    async openEnvironment(path: string, name: string) {
+      const existing = this.tabByPath(path)
+      if (existing) {
+        this.activeTabId = existing.id
+        return existing
+      }
+      const env = await ipc.readEnvironment(path)
+      const tab: RequestTab = {
+        ...blankTab(env.name || name),
+        kind: 'environment',
+        requestPath: path,
+        variables: Object.entries(env.variables).map(([key, value]) => ({ key, value, enabled: true }))
+      }
+      this.tabs.push(tab)
+      this.activeTabId = tab.id
+      return tab
+    },
     async openCollection(folderPath: string, name: string) {
       const existing = this.tabByPath(folderPath)
       if (existing) {
@@ -208,6 +227,10 @@ export const useTabsStore = defineStore('tabs', {
       try {
         if (tab.kind === 'collection') {
           await ipc.writeFolderMeta(tab.requestPath, tabToFolderMeta(tab))
+        } else if (tab.kind === 'environment') {
+          const variables = Object.fromEntries(tab.variables.filter((v) => v.key !== '').map((v) => [v.key, v.value]))
+          // updateVariables aktif ortamın activeVariables senkronunu da yapar.
+          await useEnvironmentsStore().updateVariables(tab.requestPath, tab.name, variables)
         } else {
           await ipc.writeRequestFile(tab.requestPath, tabToRequestFile(tab))
         }

@@ -3,6 +3,7 @@ export default {
     name: 'Antiphon'
   },
   header: {
+    toggleSidebar: 'Show/hide sidebar',
     home: 'Home',
     workspaces: 'Workspaces',
     import: 'Import',
@@ -39,6 +40,9 @@ export default {
     searchEnvironments: 'Search environments…',
     searchHistory: 'Search history…',
     activeEnvironment: 'Active environment',
+    today: 'Today',
+    yesterday: 'Yesterday',
+    entryCount: '{n} entries total',
     newMenu: {
       groupAi: 'AI',
       groupRequests: 'Request Types',
@@ -79,6 +83,17 @@ export default {
     delete: 'Delete',
     open: 'Open',
     rename: 'Rename',
+    edit: 'Edit',
+    editTitle: 'Edit Workspace',
+    invite: 'Invite Team',
+    inviteLocalHint:
+      'This workspace is a local folder. Push it to a git repository and share it with your team; teammates can open the same workspace via "Connect to existing folder".',
+    inviteGistHint:
+      'Teammates can join this workspace by creating a new workspace with their own GitHub token and the Gist ID below.',
+    inviteWebdavHint:
+      'Teammates can join this workspace by creating a new workspace with the WebDAV address below and their own credentials.',
+    copy: 'Copy',
+    copied: 'Copied',
     you: 'You',
     activeBadge: 'Active',
     noResults: 'No workspaces found',
@@ -141,6 +156,60 @@ export default {
     urlPlaceholder: 'Enter request URL or paste a cURL command',
     tabs: { params: 'Params', headers: 'Headers', body: 'Body', auth: 'Auth', scripts: 'Scripts', docs: 'Docs', settings: 'Settings' }
   },
+  // İsteği kaydet çekmecesi
+  saveRequest: {
+    title: 'Save Request',
+    nameLabel: 'Request name',
+    saveTo: 'Save to:',
+    searchPlaceholder: 'Search for collection or folder…',
+    newFolder: 'New Folder',
+    noFolders: 'No collections yet — the request will be saved at the workspace root.'
+  },
+  // Ana sayfa
+  home: {
+    title: 'Home',
+    latestActivity: 'Latest activity',
+    noActivity: 'No activity yet',
+    noActivityHint: 'Requests you send will show up here.',
+    favorites: 'Favorites',
+    noFavorites: 'No favorites yet',
+    noFavoritesHint: 'Star workspaces on the Workspaces page.',
+    recentWorkspaces: 'Recently used',
+    viewAll: 'View all'
+  },
+  // Git paneli
+  git: {
+    refresh: 'Refresh',
+    pull: 'Pull',
+    push: 'Push',
+    changes: 'Changes',
+    history: 'History',
+    unstagedTitle: 'Changes',
+    stagedTitle: 'Staged',
+    stageAll: 'Stage all',
+    stage: 'Stage',
+    unstage: 'Unstage',
+    commitMessage: 'Commit message',
+    commitPlaceholder: 'Summarize your changes…',
+    noChanges: 'No changes — working tree is clean',
+    noCommits: 'No commits yet',
+    notRepo: 'This workspace is not a Git repository',
+    notRepoHint: 'Initialize a repository to keep version history.',
+    initRepo: 'Initialize Git Repository',
+    noWorkspace: 'Open a workspace first.'
+  },
+  // Ortam düzenleyici sekmesi
+  environment: {
+    subtitle: 'Environment variables — used in request URLs, headers and bodies with double curly braces',
+    variables: 'Variables',
+    variablesHint: 'Key/value pairs; saving is automatic.',
+    makeActive: 'Set Active',
+    active: 'Active',
+    newTitle: 'New Environment',
+    delete: 'Delete',
+    editSelected: 'Edit selected environment',
+    selectFirst: 'Select an environment first'
+  },
   // Koleksiyon, klasör ve istek editörlerinin ortak kimlik doğrulama paneli
   auth: {
     type: 'Auth type',
@@ -154,9 +223,53 @@ export default {
     inheritHint: 'Authorization is inherited from the parent folder/collection; if none is defined above, no auth is applied.'
   },
   response: {
-    tabs: { body: 'Body', headers: 'Headers', cookies: 'Cookies', timing: 'Timing', tests: 'Tests' },
+    tabs: { body: 'Body', headers: 'Headers', cookies: 'Cookies', tests: 'Tests' },
     waiting: 'Waiting for response',
-    placeholder: 'Send a request to see the response'
+    placeholder: 'Send a request to see the response',
+    viewText: 'Text',
+    viewTree: 'Tree',
+    wrap: 'Wrap lines',
+    copy: 'Copy',
+    copied: 'Copied',
+    binaryBody: 'Binary content — cannot be displayed as text.',
+    filter: 'Filter',
+    filterPlaceholder: 'Filter using JSONPath — e.g. $.result.head',
+    search: 'Search',
+    noMatch: 'No match',
+    props: 'props',
+    items: 'items',
+    cookieAttributes: 'Attributes',
+    noCookies: 'No cookies received from the server',
+    noCookiesHint: 'Cookies for this request and their associated domains will appear here.',
+    noTests: 'No tests defined',
+    noTestsHint: 'Write tests with pm.test(...) in the Scripts tab.',
+    status2xx: 'Request successful — the server responded as required.',
+    status3xx: 'Redirection — the resource lives elsewhere.',
+    status4xx: 'Client error — the request was rejected by the server.',
+    status5xx: 'Server error — the server failed to process the request.',
+    responseTime: 'Response Time',
+    timingPrepare: 'Prepare',
+    timingSocket: 'Socket Initialization',
+    timingDns: 'DNS Lookup',
+    timingTcp: 'TCP Handshake',
+    timingTls: 'SSL/TLS Handshake',
+    timingTtfb: 'Waiting (TTFB)',
+    timingDownload: 'Download',
+    timingProcess: 'Process',
+    timingTotal: 'Total',
+    responseSize: 'Response Size',
+    requestSize: 'Request Size',
+    sizeHeaders: 'Headers',
+    sizeBody: 'Body',
+    network: 'Network',
+    httpVersion: 'HTTP Version',
+    localAddress: 'Local Address',
+    remoteAddress: 'Remote Address',
+    tlsProtocol: 'TLS Protocol',
+    cipherName: 'Cipher Name',
+    certCn: 'Certificate CN',
+    certIssuerCn: 'Issuer CN',
+    certValidUntil: 'Valid Until'
   },
   palette: {
     placeholder: 'Type a command or search…'

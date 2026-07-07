@@ -22,6 +22,7 @@ const protocolIcon: Record<TabProtocol, string> = {
       @click="tabsStore.setActiveTab(tab.id)"
     >
       <v-icon v-if="tab.kind === 'collection'" icon="mdi-folder-outline" size="14" color="warning" />
+      <v-icon v-else-if="tab.kind === 'environment'" icon="mdi-layers-triple-outline" size="14" color="primary" />
       <v-icon v-else-if="tab.protocol !== 'http'" :icon="protocolIcon[tab.protocol]" size="14" color="secondary" />
       <span v-else class="text-caption antiphon-mono font-weight-bold" :class="`text-method-${tab.method.toLowerCase()}`">
         {{ tab.method }}
@@ -36,6 +37,7 @@ const protocolIcon: Record<TabProtocol, string> = {
         <v-btn v-bind="menuProps" icon="mdi-plus" size="small" variant="text" class="ml-1" />
       </template>
       <v-list density="compact">
+        <!-- Boşta (kaydedilmemiş) sekme açılır; Kaydet ile konum seçilerek dosyalanır. -->
         <v-list-item prepend-icon="mdi-send-variant-outline" @click="tabsStore.openNewTab('Yeni İstek', 'http')">
           <v-list-item-title>HTTP İsteği</v-list-item-title>
         </v-list-item>
@@ -73,6 +75,8 @@ const protocolIcon: Record<TabProtocol, string> = {
    aktif sekme içerik yüzeyine bağlanır ve primary alt gösterge (indicator) taşır. */
 .antiphon-tabbar {
   height: 40px;
+  /* Kardeş içerik (ör. boş durum) yer isterse bile sekme şeridi ezilmesin. */
+  flex: 0 0 auto;
   overflow-x: auto;
   background: rgb(var(--v-theme-surface-light));
 }
