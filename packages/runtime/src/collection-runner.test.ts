@@ -1,6 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
-import { runCollectionItem, runCollection, type CollectionRequestItem, type HttpCallFn } from './collection-runner'
-import { SCHEMA_VERSION, type RequestFile } from '@schema/request'
+import type { RequestFile } from '@schema/request'
+import type { CollectionRequestItem, HttpCallFn } from './collection-runner'
+import { SCHEMA_VERSION } from '@schema/request'
+import { describe, expect, it, vi } from 'vitest'
+import { runCollection, runCollectionItem } from './collection-runner'
 
 function makeFile(overrides: Partial<RequestFile> = {}): RequestFile {
   return {
@@ -25,8 +27,17 @@ describe('runCollectionItem', () => {
       body: '{}'
     })
 
-    const item: CollectionRequestItem = { path: '/a.req.yaml', file: makeFile(), inheritedHeaders: [], inheritedAuth: undefined }
-    const result = await runCollectionItem(item, { variables: {}, resolveSecret: () => undefined, httpCall })
+    const item: CollectionRequestItem = {
+      path: '/a.req.yaml',
+      file: makeFile(),
+      inheritedHeaders: [],
+      inheritedAuth: undefined
+    }
+    const result = await runCollectionItem(item, {
+      variables: {},
+      resolveSecret: () => undefined,
+      httpCall
+    })
 
     expect(result.status).toBe(200)
     expect(result.tests).toEqual([])
@@ -46,11 +57,17 @@ describe('runCollectionItem', () => {
 
     const item: CollectionRequestItem = {
       path: '/b.req.yaml',
-      file: makeFile({ testScript: `pm.test('is 200', () => pm.expect(pm.response.code).to.equal(200))` }),
+      file: makeFile({
+        testScript: `pm.test('is 200', () => pm.expect(pm.response.code).to.equal(200))`
+      }),
       inheritedHeaders: [],
       inheritedAuth: undefined
     }
-    const result = await runCollectionItem(item, { variables: {}, resolveSecret: () => undefined, httpCall })
+    const result = await runCollectionItem(item, {
+      variables: {},
+      resolveSecret: () => undefined,
+      httpCall
+    })
 
     expect(result.status).toBe(500)
     expect(result.tests).toHaveLength(1)
@@ -59,15 +76,26 @@ describe('runCollectionItem', () => {
 
   it('captures thrown errors (e.g. network failure) without throwing', async () => {
     const httpCall: HttpCallFn = vi.fn().mockRejectedValue(new Error('ECONNREFUSED'))
-    const item: CollectionRequestItem = { path: '/c.req.yaml', file: makeFile(), inheritedHeaders: [], inheritedAuth: undefined }
-    const result = await runCollectionItem(item, { variables: {}, resolveSecret: () => undefined, httpCall })
+    const item: CollectionRequestItem = {
+      path: '/c.req.yaml',
+      file: makeFile(),
+      inheritedHeaders: [],
+      inheritedAuth: undefined
+    }
+    const result = await runCollectionItem(item, {
+      variables: {},
+      resolveSecret: () => undefined,
+      httpCall
+    })
 
     expect(result.status).toBeNull()
     expect(result.error).toContain('ECONNREFUSED')
   })
 
   it('applies inherited headers and auth, overridden by the request itself', async () => {
-    const httpCall: HttpCallFn = vi.fn().mockResolvedValue({ status: 200, statusText: 'OK', headers: {}, body: '{}' })
+    const httpCall: HttpCallFn = vi
+      .fn()
+      .mockResolvedValue({ status: 200, statusText: 'OK', headers: {}, body: '{}' })
     const item: CollectionRequestItem = {
       path: '/d.req.yaml',
       file: makeFile({ headers: [{ key: 'X-Own', value: 'own-value', enabled: true }] }),
@@ -85,10 +113,22 @@ describe('runCollectionItem', () => {
 
 describe('runCollection', () => {
   it('runs all items in order and reports progress', async () => {
-    const httpCall: HttpCallFn = vi.fn().mockResolvedValue({ status: 200, statusText: 'OK', headers: {}, body: '{}' })
+    const httpCall: HttpCallFn = vi
+      .fn()
+      .mockResolvedValue({ status: 200, statusText: 'OK', headers: {}, body: '{}' })
     const items: CollectionRequestItem[] = [
-      { path: '/1.req.yaml', file: makeFile({ name: 'First' }), inheritedHeaders: [], inheritedAuth: undefined },
-      { path: '/2.req.yaml', file: makeFile({ name: 'Second' }), inheritedHeaders: [], inheritedAuth: undefined }
+      {
+        path: '/1.req.yaml',
+        file: makeFile({ name: 'First' }),
+        inheritedHeaders: [],
+        inheritedAuth: undefined
+      },
+      {
+        path: '/2.req.yaml',
+        file: makeFile({ name: 'Second' }),
+        inheritedHeaders: [],
+        inheritedAuth: undefined
+      }
     ]
     const progressCalls: number[] = []
     const results = await runCollection(items, {
@@ -110,8 +150,18 @@ describe('runCollection', () => {
       .mockResolvedValueOnce({ status: 200, statusText: 'OK', headers: {}, body: '{}' })
 
     const items: CollectionRequestItem[] = [
-      { path: '/1.req.yaml', file: makeFile({ name: 'Fails' }), inheritedHeaders: [], inheritedAuth: undefined },
-      { path: '/2.req.yaml', file: makeFile({ name: 'Never Runs' }), inheritedHeaders: [], inheritedAuth: undefined }
+      {
+        path: '/1.req.yaml',
+        file: makeFile({ name: 'Fails' }),
+        inheritedHeaders: [],
+        inheritedAuth: undefined
+      },
+      {
+        path: '/2.req.yaml',
+        file: makeFile({ name: 'Never Runs' }),
+        inheritedHeaders: [],
+        inheritedAuth: undefined
+      }
     ]
     const results = await runCollection(items, {
       variables: {},

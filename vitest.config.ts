@@ -12,7 +12,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['packages/**/*.test.ts', 'electron/**/*.test.ts', 'src/**/*.test.ts'],
+    include: ['packages/**/*.test.ts', 'src/**/*.test.ts'],
     testTimeout: 20000
   }
 })

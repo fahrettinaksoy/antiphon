@@ -1,6 +1,6 @@
-import { ipc } from '@/lib/ipc'
-import { defineStore } from 'pinia'
 import type { EnvironmentSummary } from '@shared/ipc-contract'
+import { defineStore } from 'pinia'
+import { ipc } from '@/lib/ipc'
 
 export const useEnvironmentsStore = defineStore('environments', {
   state: () => ({
@@ -9,12 +9,16 @@ export const useEnvironmentsStore = defineStore('environments', {
     activeVariables: {} as Record<string, string>
   }),
   getters: {
-    activeEnvironment: (state) => state.list.find((e) => e.path === state.activeEnvironmentPath) ?? null
+    activeEnvironment: (state) =>
+      state.list.find((e) => e.path === state.activeEnvironmentPath) ?? null
   },
   actions: {
     async refresh(workspaceRoot: string) {
       this.list = await ipc.listEnvironments(workspaceRoot)
-      if (this.activeEnvironmentPath && !this.list.some((e) => e.path === this.activeEnvironmentPath)) {
+      if (
+        this.activeEnvironmentPath &&
+        !this.list.some((e) => e.path === this.activeEnvironmentPath)
+      ) {
         this.activeEnvironmentPath = null
         this.activeVariables = {}
       }

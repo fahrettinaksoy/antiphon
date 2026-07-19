@@ -1,16 +1,17 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import { EditorView, basicSetup } from 'codemirror'
-import { EditorState, type Extension } from '@codemirror/state'
-import { keymap, placeholder as cmPlaceholder } from '@codemirror/view'
-import { indentWithTab } from '@codemirror/commands'
-import { json } from '@codemirror/lang-json'
-import { javascript } from '@codemirror/lang-javascript'
-import { xml } from '@codemirror/lang-xml'
-import { html } from '@codemirror/lang-html'
-import { oneDark } from '@codemirror/theme-one-dark'
-import { graphql as graphqlExtension, updateSchema } from 'cm6-graphql'
+import type { Extension } from '@codemirror/state'
 import type { GraphQLSchema } from 'graphql'
+import { indentWithTab } from '@codemirror/commands'
+import { html } from '@codemirror/lang-html'
+import { javascript } from '@codemirror/lang-javascript'
+import { json } from '@codemirror/lang-json'
+import { xml } from '@codemirror/lang-xml'
+import { EditorState } from '@codemirror/state'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { placeholder as cmPlaceholder, keymap } from '@codemirror/view'
+import { graphql as graphqlExtension, updateSchema } from 'cm6-graphql'
+import { basicSetup, EditorView } from 'codemirror'
+import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import { useUiStore } from '../../stores/ui'
 import AppLtr from './AppLtr.vue'
 
@@ -31,9 +32,8 @@ const props = withDefaults(
   { language: 'text', placeholder: '', readOnly: false, wrap: false, graphqlSchema: undefined }
 )
 
-const typedGraphqlSchema = () => props.graphqlSchema as GraphQLSchema | undefined
 const emit = defineEmits<{ 'update:modelValue': [string] }>()
-
+const typedGraphqlSchema = () => props.graphqlSchema as GraphQLSchema | undefined
 const uiStore = useUiStore()
 const containerRef = ref<HTMLDivElement | null>(null)
 const view = shallowRef<EditorView | null>(null)

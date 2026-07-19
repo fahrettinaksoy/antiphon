@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { nanoid } from 'nanoid'
-import KeyValueEditor from '../request/KeyValueEditor.vue'
-import AppEmptyState from '../common/AppEmptyState.vue'
-import { useFormat } from '../../composables/useFormat'
-import type { RequestTab } from '../../stores/tabs'
 import type { SseEvent } from '@shared/ipc-contract'
+import type { RequestTab } from '../../stores/tabs'
+import { nanoid } from 'nanoid'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { ipc } from '@/lib/ipc'
+import { useFormat } from '../../composables/useFormat'
+import AppEmptyState from '../common/AppEmptyState.vue'
+import KeyValueEditor from '../request/KeyValueEditor.vue'
 
 const tab = defineModel<RequestTab>({ required: true })
 const fmt = useFormat()
@@ -72,7 +72,12 @@ onBeforeUnmount(() => {
 <template>
   <div class="d-flex flex-column h-100">
     <div class="d-flex align-center ga-2 pa-3">
-      <v-chip size="small" :color="isConnected ? 'success' : 'medium-emphasis'" variant="tonal" class="antiphon-mono">
+      <v-chip
+        size="small"
+        :color="isConnected ? 'success' : 'medium-emphasis'"
+        variant="tonal"
+        class="antiphon-mono"
+      >
         {{ isConnected ? 'AÇIK' : 'KAPALI' }}
       </v-chip>
       <v-text-field
@@ -93,7 +98,14 @@ onBeforeUnmount(() => {
       >
         Dinle
       </v-btn>
-      <v-btn v-else color="error" variant="tonal" prepend-icon="mdi-close-circle-outline" class="text-none" @click="disconnect">
+      <v-btn
+        v-else
+        color="error"
+        variant="tonal"
+        prepend-icon="mdi-close-circle-outline"
+        class="text-none"
+        @click="disconnect"
+      >
         Durdur
       </v-btn>
     </div>
@@ -101,21 +113,33 @@ onBeforeUnmount(() => {
 
     <v-row no-gutters class="flex-grow-1 overflow-hidden">
       <v-col cols="4" class="h-100 overflow-y-auto pa-3">
-        <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold mb-2">Header'lar</div>
+        <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold mb-2">
+          Header'lar
+        </div>
         <KeyValueEditor v-model="tab.headers" />
       </v-col>
       <v-divider vertical />
       <v-col cols="8" class="h-100 overflow-y-auto pa-3">
         <div v-for="entry in messages" :key="entry.id" class="py-1">
           <div class="d-flex ga-2 align-center">
-            <v-chip size="x-small" variant="tonal" :color="entry.isSystem ? undefined : 'secondary'" class="antiphon-mono">
+            <v-chip
+              size="x-small"
+              variant="tonal"
+              :color="entry.isSystem ? undefined : 'secondary'"
+              class="antiphon-mono"
+            >
               {{ entry.eventName }}
             </v-chip>
             <span class="text-caption text-medium-emphasis">{{ fmt.time(entry.timestamp) }}</span>
           </div>
           <pre v-if="!entry.isSystem" class="antiphon-mono text-body-2 mt-1">{{ entry.data }}</pre>
         </div>
-        <AppEmptyState v-if="messages.length === 0" size="compact" icon="mdi-lightning-bolt-outline" title="Henüz event yok" />
+        <AppEmptyState
+          v-if="messages.length === 0"
+          size="compact"
+          icon="mdi-lightning-bolt-outline"
+          title="Henüz event yok"
+        />
       </v-col>
     </v-row>
   </div>

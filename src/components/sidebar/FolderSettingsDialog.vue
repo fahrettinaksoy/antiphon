@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { ref, watch } from 'vue'
 import type { Auth, FolderMeta } from '@schema/request'
-import KeyValueEditor, { type KeyValueRow } from '../request/KeyValueEditor.vue'
+import type { KeyValueRow } from '../request/KeyValueEditor.vue'
+import { ref, watch } from 'vue'
+import { ipc } from '@/lib/ipc'
 import AuthPanel from '../request/AuthPanel.vue'
+import KeyValueEditor from '../request/KeyValueEditor.vue'
 
-const open = defineModel<boolean>({ required: true })
 const props = defineProps<{ folderPath: string | null; folderName: string }>()
-
+const open = defineModel<boolean>({ required: true })
 const auth = ref<Auth>({ type: 'none' })
 const headerRows = ref<KeyValueRow[]>([])
 // Koleksiyon editörünün yazdığı description/variables/script alanlarını kayıtta korumak için tutulur.

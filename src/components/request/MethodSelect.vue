@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { HttpMethod } from '../../stores/tabs'
+import { computed } from 'vue'
 
 const props = defineProps<{ modelValue: HttpMethod }>()
 const emit = defineEmits<{ 'update:modelValue': [HttpMethod] }>()

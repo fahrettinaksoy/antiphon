@@ -1,14 +1,15 @@
-import 'vuetify/styles'
-import '../styles/mdi.scss' // MDI ikon fontu — yalnızca woff2 (bkz. mdi.scss)
-import { createVuetify, type ThemeDefinition } from 'vuetify'
+import type { ThemeDefinition } from 'vuetify'
+import { useI18n } from 'vue-i18n'
+import { createVuetify } from 'vuetify'
 import { VBtn } from 'vuetify/components/VBtn'
 import { VCard } from 'vuetify/components/VCard'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
-import { useI18n } from 'vue-i18n'
 import { createVueI18nAdapter } from 'vuetify/locale/adapters/vue-i18n'
 // Bileşen ve direktifler artık "vite-plugin-vuetify" (autoImport) tarafından yalnızca
-// kullanıldıkları yerde içe aktarılır (tree-shaking) — bkz. electron.vite.config.ts.
+// kullanıldıkları yerde içe aktarılır (tree-shaking) — bkz. vite.config.ts.
 import { i18n } from './i18n'
+import 'vuetify/styles'
+import '../styles/mdi.scss' // MDI ikon fontu — yalnızca woff2 (bkz. mdi.scss)
 
 // Material Design 3 tabanlı özgün tema: koyu "obsidian" ana renk + amber accent.
 // on-*: okuma yüzeylerinin metin/ikon rengi (kontrast kontrolü). surface-bright/light: yükseltilmiş
@@ -155,7 +156,10 @@ export const vuetify = createVuetify({
   // numberFormats/datetimeFormats i18n'in generic tipini daraltır; adapter gevşek bir
   // I18n tipi beklediğinden burada tip köprüsü (cast) gerekir — çalışma davranışı aynıdır.
   locale: {
-    adapter: createVueI18nAdapter({ i18n: i18n as Parameters<typeof createVueI18nAdapter>[0]['i18n'], useI18n })
+    adapter: createVueI18nAdapter({
+      i18n: i18n as Parameters<typeof createVueI18nAdapter>[0]['i18n'],
+      useI18n
+    })
   },
   // Açık ikon yapılandırması (varsayılana güvenmek yerine): MDI font seti + Vuetify'nin dahili
   // bileşen ikon takma adları ($dropdown, $next…) + uygulamaya özgü semantik takma adlar.

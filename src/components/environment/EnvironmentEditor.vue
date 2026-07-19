@@ -1,10 +1,10 @@
 <script setup lang="ts">
+import type { RequestTab } from '../../stores/tabs'
 // Ortam düzenleyici sekmesi — ortamlar da istek/koleksiyon gibi ana alanda düzenlenir.
 import { computed } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import KeyValueEditor from '../request/KeyValueEditor.vue'
 import { useEnvironmentsStore } from '../../stores/environments'
-import type { RequestTab } from '../../stores/tabs'
+import KeyValueEditor from '../request/KeyValueEditor.vue'
 
 const tab = defineModel<RequestTab>({ required: true })
 const { t } = useI18n()
@@ -26,8 +26,15 @@ function toggleActive() {
         <div class="text-body-2 font-weight-bold text-truncate">{{ tab.name }}</div>
         <div class="text-caption text-medium-emphasis">{{ t('environment.subtitle') }}</div>
       </div>
-      <v-chip v-if="isActive" size="small" color="primary" variant="tonal">{{ t('environment.active') }}</v-chip>
-      <v-btn size="small" :variant="isActive ? 'text' : 'tonal'" class="text-none" @click="toggleActive">
+      <v-chip v-if="isActive" size="small" color="primary" variant="tonal">{{
+        t('environment.active')
+      }}</v-chip>
+      <v-btn
+        size="small"
+        :variant="isActive ? 'text' : 'tonal'"
+        class="text-none"
+        @click="toggleActive"
+      >
         {{ isActive ? t('actions.clear') : t('environment.makeActive') }}
       </v-btn>
     </div>

@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
 import type { HttpResponsePayload } from '@shared/ipc-contract'
+import { defineStore } from 'pinia'
 
 export interface TabResponseState {
   response: HttpResponsePayload | null
@@ -20,13 +20,21 @@ export const useResponsesStore = defineStore('responses', {
   },
   actions: {
     setLoading(tabId: string) {
-      this.byTabId[tabId] = { response: this.byTabId[tabId]?.response ?? null, error: null, isLoading: true }
+      this.byTabId[tabId] = {
+        response: this.byTabId[tabId]?.response ?? null,
+        error: null,
+        isLoading: true
+      }
     },
     setResult(tabId: string, response: HttpResponsePayload) {
       this.byTabId[tabId] = { response, error: null, isLoading: false }
     },
     setError(tabId: string, error: string) {
-      this.byTabId[tabId] = { response: this.byTabId[tabId]?.response ?? null, error, isLoading: false }
+      this.byTabId[tabId] = {
+        response: this.byTabId[tabId]?.response ?? null,
+        error,
+        isLoading: false
+      }
     },
     clear(tabId: string) {
       delete this.byTabId[tabId]

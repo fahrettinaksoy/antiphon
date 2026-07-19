@@ -1,8 +1,10 @@
-import { defineStore } from 'pinia'
 import type { Platform } from '@shared/ipc-contract'
+import { defineStore } from 'pinia'
 
-export type SidebarSection = 'collections' | 'apis' | 'environments' | 'mockServers' | 'monitors' | 'history'
-export type VuetifyThemeName = 'antiphonDark' | 'antiphonLight' | 'antiphonHcDark' | 'antiphonHcLight'
+export type SidebarSection =
+  'collections' | 'apis' | 'environments' | 'mockServers' | 'monitors' | 'history'
+export type VuetifyThemeName =
+  'antiphonDark' | 'antiphonLight' | 'antiphonHcDark' | 'antiphonHcLight'
 // Açık/koyu tercihi: sabit ya da 'system' (OS'i canlı takip eder).
 export type ThemePreference = 'system' | 'antiphonDark' | 'antiphonLight'
 // Kontrast tercihi (açık/koyu'dan bağımsız eksen): normal/yüksek ya da 'system' (OS prefers-contrast).
@@ -34,13 +36,18 @@ export const useUiStore = defineStore('ui', {
   getters: {
     // Efektif koyu-mu? (tercih 'system' ise OS'e göre)
     isDarkEffective: (state): boolean =>
-      state.themePreference === 'system' ? state.systemPrefersDark : state.themePreference === 'antiphonDark',
+      state.themePreference === 'system'
+        ? state.systemPrefersDark
+        : state.themePreference === 'antiphonDark',
     // Efektif yüksek-kontrast-mı? (tercih 'system' ise OS prefers-contrast'e göre)
     isHighContrastEffective: (state): boolean =>
-      state.contrastPreference === 'system' ? state.systemPrefersMoreContrast : state.contrastPreference === 'high',
+      state.contrastPreference === 'system'
+        ? state.systemPrefersMoreContrast
+        : state.contrastPreference === 'high',
     // Efektif Vuetify teması: açık/koyu × normal/yüksek-kontrast → 4 temadan biri.
     themeName(): VuetifyThemeName {
-      if (this.isHighContrastEffective) return this.isDarkEffective ? 'antiphonHcDark' : 'antiphonHcLight'
+      if (this.isHighContrastEffective)
+        return this.isDarkEffective ? 'antiphonHcDark' : 'antiphonHcLight'
       return this.isDarkEffective ? 'antiphonDark' : 'antiphonLight'
     },
     // macOS'ta `titleBarStyle: 'hiddenInset'` pencere trafik ışıklarını (kırmızı/sarı/yeşil) web
@@ -113,6 +120,14 @@ export const useUiStore = defineStore('ui', {
   },
   persist: {
     // systemPrefers* KALICI DEĞİL — her açılışta OS'ten canlı okunur.
-    pick: ['themePreference', 'contrastPreference', 'locale', 'sidebarWidth', 'sidebarVisible', 'activeSidebarSection', 'favoriteWorkspaceIds']
+    pick: [
+      'themePreference',
+      'contrastPreference',
+      'locale',
+      'sidebarWidth',
+      'sidebarVisible',
+      'activeSidebarSection',
+      'favoriteWorkspaceIds'
+    ]
   }
 })

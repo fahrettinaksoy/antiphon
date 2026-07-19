@@ -1,4 +1,4 @@
-import { describe, it, expect, afterAll } from 'vitest'
+import { afterAll, describe, expect, it } from 'vitest'
 import { i18n } from './i18n'
 
 // Locale-duyarlı sayı biçimlendirmesinin (Intl) doğru ayraçları kullandığını doğrular.

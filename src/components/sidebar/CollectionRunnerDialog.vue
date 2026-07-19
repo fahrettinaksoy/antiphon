@@ -1,16 +1,15 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { nanoid } from 'nanoid'
-import { useWorkspaceStore } from '../../stores/workspace'
-import { useEnvironmentsStore } from '../../stores/environments'
-import { useFormat } from '../../composables/useFormat'
 import type { CollectionRunProgressEvent, CollectionRunResultDto } from '@shared/ipc-contract'
+import { nanoid } from 'nanoid'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { ipc } from '@/lib/ipc'
+import { useFormat } from '../../composables/useFormat'
+import { useEnvironmentsStore } from '../../stores/environments'
+import { useWorkspaceStore } from '../../stores/workspace'
 
+const props = defineProps<{ folderPath: string | null; folderName: string }>()
 const open = defineModel<boolean>({ required: true })
 const fmt = useFormat()
-const props = defineProps<{ folderPath: string | null; folderName: string }>()
-
 const workspaceStore = useWorkspaceStore()
 const environmentsStore = useEnvironmentsStore()
 
@@ -33,7 +32,12 @@ async function run() {
   isRunning.value = true
   runId.value = nanoid(8)
   try {
-    await ipc.runCollection(runId.value, props.folderPath, workspaceStore.rootPath, environmentsStore.activeVariables)
+    await ipc.runCollection(
+      runId.value,
+      props.folderPath,
+      workspaceStore.rootPath,
+      environmentsStore.activeVariables
+    )
   } finally {
     isRunning.value = false
   }
@@ -66,24 +70,47 @@ const passCount = () => results.value.filter((r) => statusColor(r) === 'success'
     <v-card :title="`Koleksiyonu Çalıştır — ${folderName}`" rounded="lg">
       <v-card-text>
         <div class="d-flex align-center ga-3 mb-3">
-          <v-btn color="primary" variant="flat" :loading="isRunning" prepend-icon="mdi-play" class="text-none" @click="run">
+          <v-btn
+            color="primary"
+            variant="flat"
+            :loading="isRunning"
+            prepend-icon="mdi-play"
+            class="text-none"
+            @click="run"
+          >
             Çalıştır
           </v-btn>
           <span v-if="progress.total > 0" class="text-caption text-medium-emphasis">
             {{ progress.index }} / {{ progress.total }}
           </span>
           <v-spacer />
-          <v-chip v-if="results.length > 0" size="small" variant="tonal" :color="passCount() === results.length ? 'success' : 'warning'">
+          <v-chip
+            v-if="results.length > 0"
+            size="small"
+            variant="tonal"
+            :color="passCount() === results.length ? 'success' : 'warning'"
+          >
             {{ passCount() }}/{{ results.length }} başarılı
           </v-chip>
         </div>
 
-        <v-progress-linear v-if="isRunning" :model-value="(progress.index / Math.max(progress.total, 1)) * 100" color="primary" class="mb-3" />
+        <v-progress-linear
+          v-if="isRunning"
+          :model-value="(progress.index / Math.max(progress.total, 1)) * 100"
+          color="primary"
+          class="mb-3"
+        />
 
         <v-list density="compact">
           <v-list-item v-for="result in results" :key="result.path">
             <template #prepend>
-              <v-chip size="x-small" :color="statusColor(result)" variant="tonal" class="antiphon-mono mr-2" style="min-width: 46px; justify-content: center">
+              <v-chip
+                size="x-small"
+                :color="statusColor(result)"
+                variant="tonal"
+                class="antiphon-mono mr-2"
+                style="min-width: 46px; justify-content: center"
+              >
                 {{ result.status ?? 'ERR' }}
               </v-chip>
             </template>
@@ -93,7 +120,12 @@ const passCount = () => results.value.filter((r) => statusColor(r) === 'success'
             </v-list-item-title>
             <v-list-item-subtitle class="text-caption">
               {{ fmt.ms(result.durationMs) }}
-              <span v-if="result.tests.length"> · {{ result.tests.filter((t) => t.passed).length }}/{{ result.tests.length }} test</span>
+              <span v-if="result.tests.length">
+                · {{ result.tests.filter((t) => t.passed).length }}/{{
+                  result.tests.length
+                }}
+                test</span
+              >
               <span v-if="result.error" class="text-error"> · {{ result.error }}</span>
             </v-list-item-subtitle>
           </v-list-item>

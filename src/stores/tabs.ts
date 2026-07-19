@@ -1,8 +1,16 @@
-import { ipc } from '@/lib/ipc'
-import { defineStore } from 'pinia'
+import type {
+  Auth,
+  Body,
+  FolderMeta,
+  HttpMethod,
+  KeyValue,
+  RequestFile,
+  RequestSettings
+} from '@schema/request'
+import { defaultRequestSettings, SCHEMA_VERSION } from '@schema/request'
 import { nanoid } from 'nanoid'
-import type { Auth, Body, FolderMeta, HttpMethod, KeyValue, RequestFile, RequestSettings } from '@schema/request'
-import { SCHEMA_VERSION, defaultRequestSettings } from '@schema/request'
+import { defineStore } from 'pinia'
+import { ipc } from '@/lib/ipc'
 import { useEnvironmentsStore } from './environments'
 
 export type { HttpMethod }
@@ -141,13 +149,15 @@ export const useTabsStore = defineStore('tabs', {
   }),
   getters: {
     activeTab: (state) => state.tabs.find((tab) => tab.id === state.activeTabId) ?? null,
-    tabByPath: (state) => (path: string) => state.tabs.find((tab) => tab.requestPath === path) ?? null
+    tabByPath: (state) => (path: string) =>
+      state.tabs.find((tab) => tab.requestPath === path) ?? null
   },
   actions: {
     toggleSplitView() {
       this.splitViewEnabled = !this.splitViewEnabled
       if (this.splitViewEnabled && !this.secondaryTabId) {
-        this.secondaryTabId = this.tabs.find((t) => t.id !== this.activeTabId)?.id ?? this.activeTabId
+        this.secondaryTabId =
+          this.tabs.find((t) => t.id !== this.activeTabId)?.id ?? this.activeTabId
       }
     },
     setSecondaryTab(tabId: string) {
@@ -183,7 +193,11 @@ export const useTabsStore = defineStore('tabs', {
         ...blankTab(env.name || name),
         kind: 'environment',
         requestPath: path,
-        variables: Object.entries(env.variables).map(([key, value]) => ({ key, value, enabled: true }))
+        variables: Object.entries(env.variables).map(([key, value]) => ({
+          key,
+          value,
+          enabled: true
+        }))
       }
       this.tabs.push(tab)
       this.activeTabId = tab.id
@@ -210,7 +224,8 @@ export const useTabsStore = defineStore('tabs', {
         this.activeTabId = fallback?.id ?? null
       }
       if (this.secondaryTabId === tabId) {
-        this.secondaryTabId = this.tabs.find((t) => t.id !== this.activeTabId)?.id ?? this.activeTabId
+        this.secondaryTabId =
+          this.tabs.find((t) => t.id !== this.activeTabId)?.id ?? this.activeTabId
       }
     },
     setActiveTab(tabId: string) {
@@ -228,7 +243,9 @@ export const useTabsStore = defineStore('tabs', {
         if (tab.kind === 'collection') {
           await ipc.writeFolderMeta(tab.requestPath, tabToFolderMeta(tab))
         } else if (tab.kind === 'environment') {
-          const variables = Object.fromEntries(tab.variables.filter((v) => v.key !== '').map((v) => [v.key, v.value]))
+          const variables = Object.fromEntries(
+            tab.variables.filter((v) => v.key !== '').map((v) => [v.key, v.value])
+          )
           // updateVariables aktif ortamın activeVariables senkronunu da yapar.
           await useEnvironmentsStore().updateVariables(tab.requestPath, tab.name, variables)
         } else {

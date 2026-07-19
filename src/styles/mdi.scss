@@ -1,4 +1,4 @@
-// Material Design Icons — YALNIZCA woff2 (Chromium/Electron zaten woff2 kullanır).
+// Material Design Icons — YALNIZCA woff2 (hedef WebView'lar woff2 destekler).
 // Standart `@mdi/font/css/materialdesignicons.css` eot/ttf/woff formatlarını da bundle'a
 // katıyordu (~3.2MB ölü ağırlık). Bu SCSS, MDI'nın `_path` parçasını (4 format) atlayıp
 // yerine tek-format woff2 @font-face tanımlar; diğer parçalar ikon sınıflarını üretir.
@@ -7,7 +7,8 @@
 
 @font-face {
   font-family: '#{$mdi-font-name}';
-  src: url('../../node_modules/@mdi/font/fonts/#{$mdi-filename}-webfont.woff2?v=#{$mdi-version}') format('woff2');
+  src: url('../../node_modules/@mdi/font/fonts/#{$mdi-filename}-webfont.woff2?v=#{$mdi-version}')
+    format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: block;

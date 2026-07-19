@@ -64,7 +64,10 @@ export async function loadLocaleMessages(locale: AppLocale): Promise<void> {
   const loader = messageLoaders[locale]
   if (!loader) return // yükleyici yoksa (ör. varsayılan dil) atla
   const mod = await loader()
-  i18n.global.setLocaleMessage(locale, { ...mod.default, $vuetify: vuetifyLocales[locale] as typeof vuetifyLocales.tr })
+  i18n.global.setLocaleMessage(locale, {
+    ...mod.default,
+    $vuetify: vuetifyLocales[locale] as typeof vuetifyLocales.tr
+  })
   loaded.add(locale)
 }
 

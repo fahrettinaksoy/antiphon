@@ -1,13 +1,13 @@
 <script setup lang="ts">
+import type { EnvironmentSummary } from '@shared/ipc-contract'
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useEnvironmentsStore } from '../../stores/environments'
-import { useWorkspaceStore } from '../../stores/workspace'
 import { useTabsStore } from '../../stores/tabs'
-import NewItemDialog from './NewItemDialog.vue'
+import { useWorkspaceStore } from '../../stores/workspace'
 import AppEmptyState from '../common/AppEmptyState.vue'
+import NewItemDialog from './NewItemDialog.vue'
 import SidebarSection from './SidebarSection.vue'
-import type { EnvironmentSummary } from '@shared/ipc-contract'
 
 const { t } = useI18n()
 const environmentsStore = useEnvironmentsStore()
@@ -23,7 +23,9 @@ const filteredEnvs = computed(() => {
 })
 
 const activeEnvName = computed(
-  () => environmentsStore.list.find((env) => env.path === environmentsStore.activeEnvironmentPath)?.name ?? null
+  () =>
+    environmentsStore.list.find((env) => env.path === environmentsStore.activeEnvironmentPath)
+      ?.name ?? null
 )
 
 // Satıra tıklamak ortamı SEKME olarak açar (çalışma alanı mantığı);
@@ -33,7 +35,9 @@ function openEnvironment(env: EnvironmentSummary) {
 }
 
 function toggleActive(path: string) {
-  environmentsStore.selectEnvironment(environmentsStore.activeEnvironmentPath === path ? null : path)
+  environmentsStore.selectEnvironment(
+    environmentsStore.activeEnvironmentPath === path ? null : path
+  )
 }
 
 // Yeni ortam: ad diyaloğu → oluştur → düzenleyici sekmesinde aç
@@ -54,11 +58,11 @@ async function removeEnvironment(env: EnvironmentSummary) {
 
 <template>
   <SidebarSection
+    v-model:search="search"
     :title="t('sidebar.environments')"
     :count="environmentsStore.list.length || undefined"
     searchable
     :search-placeholder="t('sidebar.searchEnvironments')"
-    v-model:search="search"
     addable
     :add-tooltip="t('environment.newTitle')"
     @add="newDialogOpen = true"
@@ -82,7 +86,12 @@ async function removeEnvironment(env: EnvironmentSummary) {
       @action="newDialogOpen = true"
     />
 
-    <AppEmptyState v-else-if="filteredEnvs.length === 0" size="compact" icon="mdi-magnify" :title="t('sidebar.noMatches')" />
+    <AppEmptyState
+      v-else-if="filteredEnvs.length === 0"
+      size="compact"
+      icon="mdi-magnify"
+      :title="t('sidebar.noMatches')"
+    />
 
     <v-list v-else density="compact" class="flex-grow-1 overflow-y-auto">
       <v-list-item
@@ -97,7 +106,11 @@ async function removeEnvironment(env: EnvironmentSummary) {
         <v-list-item-title class="text-body-2 text-truncate">{{ env.name }}</v-list-item-title>
         <template #append>
           <v-btn
-            :icon="environmentsStore.activeEnvironmentPath === env.path ? 'mdi-check-circle' : 'mdi-check-circle-outline'"
+            :icon="
+              environmentsStore.activeEnvironmentPath === env.path
+                ? 'mdi-check-circle'
+                : 'mdi-check-circle-outline'
+            "
             :color="environmentsStore.activeEnvironmentPath === env.path ? 'primary' : undefined"
             size="x-small"
             variant="text"
@@ -132,7 +145,11 @@ async function removeEnvironment(env: EnvironmentSummary) {
       </div>
     </template>
 
-    <NewItemDialog v-model="newDialogOpen" :title="t('environment.newTitle')" @confirm="handleCreate" />
+    <NewItemDialog
+      v-model="newDialogOpen"
+      :title="t('environment.newTitle')"
+      @confirm="handleCreate"
+    />
   </SidebarSection>
 </template>
 

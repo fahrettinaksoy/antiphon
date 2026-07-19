@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { runPreRequestScript, runTestScript } from './script-engine'
 
 describe('runPreRequestScript', () => {
@@ -14,7 +14,11 @@ describe('runPreRequestScript', () => {
     )
 
     expect(result.variables.token).toBe('abc-123')
-    expect(result.request.headers[0]).toEqual({ key: 'X-From-Script', value: 'abc-123', enabled: true })
+    expect(result.request.headers[0]).toEqual({
+      key: 'X-From-Script',
+      value: 'abc-123',
+      enabled: true
+    })
     expect(result.consoleLogs).toContain('pre-request ran')
   })
 
@@ -26,7 +30,11 @@ describe('runPreRequestScript', () => {
   })
 
   it('captures a script error as a console log instead of throwing', () => {
-    const result = runPreRequestScript('throw new Error("boom")', {}, { method: 'GET', url: '', headers: [], params: [] })
+    const result = runPreRequestScript(
+      'throw new Error("boom")',
+      {},
+      { method: 'GET', url: '', headers: [], params: [] }
+    )
     expect(result.consoleLogs.some((log) => log.includes('boom'))).toBe(true)
   })
 })

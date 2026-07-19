@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import { nanoid } from 'nanoid'
-import KeyValueEditor from '../request/KeyValueEditor.vue'
-import AppEmptyState from '../common/AppEmptyState.vue'
-import type { RequestTab } from '../../stores/tabs'
 import type { WsEvent } from '@shared/ipc-contract'
+import type { RequestTab } from '../../stores/tabs'
+import { nanoid } from 'nanoid'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { ipc } from '@/lib/ipc'
+import AppEmptyState from '../common/AppEmptyState.vue'
+import KeyValueEditor from '../request/KeyValueEditor.vue'
 
 const tab = defineModel<RequestTab>({ required: true })
 
@@ -75,7 +75,12 @@ onBeforeUnmount(() => {
 <template>
   <div class="d-flex flex-column h-100">
     <div class="d-flex align-center ga-2 pa-3">
-      <v-chip size="small" :color="isConnected ? 'success' : 'medium-emphasis'" variant="tonal" class="antiphon-mono">
+      <v-chip
+        size="small"
+        :color="isConnected ? 'success' : 'medium-emphasis'"
+        variant="tonal"
+        class="antiphon-mono"
+      >
         {{ isConnected ? 'BAĞLI' : 'BAĞLI DEĞİL' }}
       </v-chip>
       <v-text-field
@@ -96,7 +101,14 @@ onBeforeUnmount(() => {
       >
         Bağlan
       </v-btn>
-      <v-btn v-else color="error" variant="tonal" prepend-icon="mdi-close-circle-outline" class="text-none" @click="disconnect">
+      <v-btn
+        v-else
+        color="error"
+        variant="tonal"
+        prepend-icon="mdi-close-circle-outline"
+        class="text-none"
+        @click="disconnect"
+      >
         Kes
       </v-btn>
     </div>
@@ -104,7 +116,9 @@ onBeforeUnmount(() => {
 
     <v-row no-gutters class="flex-grow-1 overflow-hidden">
       <v-col cols="4" class="h-100 overflow-y-auto pa-3">
-        <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold mb-2">Header'lar</div>
+        <div class="text-caption text-medium-emphasis text-uppercase font-weight-bold mb-2">
+          Header'lar
+        </div>
         <KeyValueEditor v-model="tab.headers" />
       </v-col>
       <v-divider vertical />
@@ -117,13 +131,32 @@ onBeforeUnmount(() => {
             :class="{ 'text-medium-emphasis': entry.direction === 'system' }"
           >
             <v-icon
-              :icon="entry.direction === 'out' ? 'mdi-arrow-up-bold' : entry.direction === 'in' ? 'mdi-arrow-down-bold' : 'mdi-information-outline'"
+              :icon="
+                entry.direction === 'out'
+                  ? 'mdi-arrow-up-bold'
+                  : entry.direction === 'in'
+                    ? 'mdi-arrow-down-bold'
+                    : 'mdi-information-outline'
+              "
               size="14"
-              :color="entry.direction === 'out' ? 'primary' : entry.direction === 'in' ? 'secondary' : undefined"
+              :color="
+                entry.direction === 'out'
+                  ? 'primary'
+                  : entry.direction === 'in'
+                    ? 'secondary'
+                    : undefined
+              "
             />
-            <span class="antiphon-mono text-truncate" style="white-space: pre-wrap">{{ entry.data }}</span>
+            <span class="antiphon-mono text-truncate" style="white-space: pre-wrap">{{
+              entry.data
+            }}</span>
           </div>
-          <AppEmptyState v-if="messages.length === 0" size="compact" icon="mdi-message-outline" title="Henüz mesaj yok" />
+          <AppEmptyState
+            v-if="messages.length === 0"
+            size="compact"
+            icon="mdi-message-outline"
+            title="Henüz mesaj yok"
+          />
         </div>
         <v-divider />
         <div class="d-flex ga-2 pa-3">
@@ -136,7 +169,9 @@ onBeforeUnmount(() => {
             :disabled="!isConnected"
             @keydown.enter="sendMessage"
           />
-          <v-btn color="primary" :disabled="!isConnected" class="text-none" @click="sendMessage">Gönder</v-btn>
+          <v-btn color="primary" :disabled="!isConnected" class="text-none" @click="sendMessage"
+            >Gönder</v-btn
+          >
         </div>
       </v-col>
     </v-row>

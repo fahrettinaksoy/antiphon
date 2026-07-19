@@ -1,10 +1,10 @@
-import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
+import { createApp } from 'vue'
 import App from './App.vue'
-import router from './router'
-import { vuetify } from './plugins/vuetify'
 import { i18n } from './plugins/i18n'
+import { vuetify } from './plugins/vuetify'
+import router from './router'
 import './styles/main.css'
 
 const pinia = createPinia()

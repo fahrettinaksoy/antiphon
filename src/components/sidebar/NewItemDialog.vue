@@ -27,11 +27,21 @@ function confirm() {
 </script>
 
 <template>
-  <v-dialog :model-value="modelValue" max-width="420" @update:model-value="$emit('update:modelValue', $event)">
+  <v-dialog
+    :model-value="modelValue"
+    max-width="420"
+    @update:model-value="$emit('update:modelValue', $event)"
+  >
     <v-card :title="title" rounded="lg">
       <AppDefaults preset="dialogForm">
         <v-card-text>
-          <v-text-field v-model="name" placeholder="Ad girin…" autofocus hide-details @keydown.enter="confirm" />
+          <v-text-field
+            v-model="name"
+            placeholder="Ad girin…"
+            autofocus
+            hide-details
+            @keydown.enter="confirm"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

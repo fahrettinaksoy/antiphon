@@ -1,5 +1,5 @@
-import vm from 'node:vm'
 import type { Body, KeyValue } from '@schema/request'
+import vm from 'node:vm'
 
 export interface ScriptRequestContext {
   method: string
@@ -45,7 +45,8 @@ function buildExpect(actual: unknown): ExpectChain {
   return {
     to: {
       equal: (expected) => {
-        if (actual !== expected) fail(`expected ${JSON.stringify(actual)} to equal ${JSON.stringify(expected)}`)
+        if (actual !== expected)
+          fail(`expected ${JSON.stringify(actual)} to equal ${JSON.stringify(expected)}`)
       },
       eql: (expected) => {
         if (JSON.stringify(actual) !== JSON.stringify(expected)) {
@@ -54,7 +55,9 @@ function buildExpect(actual: unknown): ExpectChain {
       },
       include: (expected) => {
         const ok =
-          typeof actual === 'string' || Array.isArray(actual) ? (actual as string | unknown[]).includes(expected as never) : false
+          typeof actual === 'string' || Array.isArray(actual)
+            ? (actual as string | unknown[]).includes(expected as never)
+            : false
         if (!ok) fail(`expected ${JSON.stringify(actual)} to include ${JSON.stringify(expected)}`)
       },
       be: {
@@ -68,12 +71,14 @@ function buildExpect(actual: unknown): ExpectChain {
           if (!actual) fail('expected value to be truthy')
         },
         a: (typeName) => {
-          if (typeof actual !== typeName) fail(`expected ${actual} to be a ${typeName}`)
+          const actualType = typeof actual
+          if (actualType !== typeName) fail(`expected ${actual} to be a ${typeName}`)
         }
       },
       not: {
         equal: (expected) => {
-          if (actual === expected) fail(`expected ${JSON.stringify(actual)} not to equal ${JSON.stringify(expected)}`)
+          if (actual === expected)
+            fail(`expected ${JSON.stringify(actual)} not to equal ${JSON.stringify(expected)}`)
         }
       }
     }
@@ -119,7 +124,9 @@ export function runPreRequestScript(
 
   try {
     const context = vm.createContext(sandbox)
-    new vm.Script(script, { filename: 'pre-request-script.js' }).runInContext(context, { timeout: 2000 })
+    new vm.Script(script, { filename: 'pre-request-script.js' }).runInContext(context, {
+      timeout: 2000
+    })
   } catch (error) {
     consoleLogs.push(`Script hatası: ${error instanceof Error ? error.message : String(error)}`)
   }
@@ -133,7 +140,11 @@ export interface TestRunResult {
   consoleLogs: string[]
 }
 
-export function runTestScript(script: string, variables: Record<string, string>, response: ScriptResponseContext): TestRunResult {
+export function runTestScript(
+  script: string,
+  variables: Record<string, string>,
+  response: ScriptResponseContext
+): TestRunResult {
   const vars = { ...variables }
   const tests: TestResult[] = []
   const consoleLogs: string[] = []
@@ -168,7 +179,11 @@ export function runTestScript(script: string, variables: Record<string, string>,
           fn()
           tests.push({ name, passed: true })
         } catch (error) {
-          tests.push({ name, passed: false, error: error instanceof Error ? error.message : String(error) })
+          tests.push({
+            name,
+            passed: false,
+            error: error instanceof Error ? error.message : String(error)
+          })
         }
       },
       expect: buildExpect

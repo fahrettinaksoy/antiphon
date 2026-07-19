@@ -63,7 +63,13 @@ ensureTrailingRow()
           />
         </td>
         <td class="antiphon-kv-table__actions">
-          <v-btn icon="mdi-close" size="x-small" variant="text" :disabled="index === rows.length - 1" @click="removeRow(index)" />
+          <v-btn
+            icon="mdi-close"
+            size="x-small"
+            variant="text"
+            :disabled="index === rows.length - 1"
+            @click="removeRow(index)"
+          />
         </td>
       </tr>
     </tbody>

@@ -89,7 +89,7 @@ export default {
     inviteLocalHint:
       'Bu çalışma alanı yerel bir klasördür. Klasörü bir git deposuna push\'layıp ekibinizle paylaşın; ekip arkadaşlarınız "Mevcut klasöre bağlan" ile aynı alanı açabilir.',
     inviteGistHint:
-      'Ekip arkadaşlarınız, kendi GitHub token\'ları ve aşağıdaki Gist ID ile yeni bir çalışma alanı oluşturarak bu alana bağlanabilir.',
+      "Ekip arkadaşlarınız, kendi GitHub token'ları ve aşağıdaki Gist ID ile yeni bir çalışma alanı oluşturarak bu alana bağlanabilir.",
     inviteWebdavHint:
       'Ekip arkadaşlarınız, aşağıdaki WebDAV adresi ve kendi kimlik bilgileriyle yeni bir çalışma alanı oluşturarak bu alana bağlanabilir.',
     copy: 'Kopyala',
@@ -153,8 +153,16 @@ export default {
     }
   },
   request: {
-    urlPlaceholder: 'İstek URL\'sini girin veya bir cURL yapıştırın',
-    tabs: { params: 'Parametreler', headers: 'Başlıklar', body: 'Gövde', auth: 'Kimlik Doğrulama', scripts: 'Script\'ler', docs: 'Dokümantasyon', settings: 'Ayarlar' }
+    urlPlaceholder: "İstek URL'sini girin veya bir cURL yapıştırın",
+    tabs: {
+      params: 'Parametreler',
+      headers: 'Başlıklar',
+      body: 'Gövde',
+      auth: 'Kimlik Doğrulama',
+      scripts: "Script'ler",
+      docs: 'Dokümantasyon',
+      settings: 'Ayarlar'
+    }
   },
   // İsteği kaydet çekmecesi
   saveRequest: {
@@ -200,7 +208,8 @@ export default {
   },
   // Ortam düzenleyici sekmesi
   environment: {
-    subtitle: 'Ortam değişkenleri — istek URL, başlık ve gövdelerinde çift süslü parantezle kullanılır',
+    subtitle:
+      'Ortam değişkenleri — istek URL, başlık ve gövdelerinde çift süslü parantezle kullanılır',
     variables: 'Değişkenler',
     variablesHint: 'Anahtar/değer çiftleri; kaydetme otomatiktir.',
     makeActive: 'Aktif Yap',
@@ -220,7 +229,8 @@ export default {
     header: 'Header',
     queryParam: 'Query Param',
     inherit: 'Üst öğeden devral',
-    inheritHint: 'Kimlik doğrulama üst klasörden/koleksiyondan devralınır; hiçbir üst öğede tanımlı değilse uygulanmaz.'
+    inheritHint:
+      'Kimlik doğrulama üst klasörden/koleksiyondan devralınır; hiçbir üst öğede tanımlı değilse uygulanmaz.'
   },
   response: {
     tabs: { body: 'Gövde', headers: 'Başlıklar', cookies: 'Çerezler', tests: 'Testler' },
@@ -282,8 +292,10 @@ export default {
     folderSubtitle: 'Klasör ayarları — bu klasördeki tüm isteklere uygulanır',
     descriptionLabel: 'Açıklama',
     descriptionPlaceholder: 'Bu koleksiyonu açıklayan notlar ekleyin…',
-    authHint: 'Bu kimlik doğrulama, üzerine yazmadığı sürece koleksiyondaki tüm isteklere uygulanır.',
-    folderAuthHint: 'Bu kimlik doğrulama, üzerine yazmadığı sürece bu klasördeki tüm isteklere uygulanır.',
+    authHint:
+      'Bu kimlik doğrulama, üzerine yazmadığı sürece koleksiyondaki tüm isteklere uygulanır.',
+    folderAuthHint:
+      'Bu kimlik doğrulama, üzerine yazmadığı sürece bu klasördeki tüm isteklere uygulanır.',
     noAuth: 'Yok',
     noAuthHint: 'Bu koleksiyon için kimlik doğrulama uygulanmıyor.',
     inheritAuth: 'Üst öğeden devral',

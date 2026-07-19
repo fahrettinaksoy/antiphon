@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import { useGitStore } from '../../stores/git'
-import { useWorkspaceStore } from '../../stores/workspace'
-import { useGitIdentityStore } from '../../stores/git-identity'
+import { ipc } from '@/lib/ipc'
 import { useFormat } from '../../composables/useFormat'
-import GitCredentialsDialog from './GitCredentialsDialog.vue'
-import SidebarSection from '../sidebar/SidebarSection.vue'
+import { useGitStore } from '../../stores/git'
+import { useGitIdentityStore } from '../../stores/git-identity'
+import { useWorkspaceStore } from '../../stores/workspace'
 import AppEmptyState from '../common/AppEmptyState.vue'
+import SidebarSection from '../sidebar/SidebarSection.vue'
+import GitCredentialsDialog from './GitCredentialsDialog.vue'
 
 const { t } = useI18n()
 const gitStore = useGitStore()
@@ -32,7 +32,12 @@ const unstagedFiles = computed(() => gitStore.status?.files.filter((f) => !f.sta
 const diffLines = computed(() =>
   gitStore.diffText.split('\n').map((line) => ({
     text: line,
-    kind: line.startsWith('+') && !line.startsWith('+++') ? 'add' : line.startsWith('-') && !line.startsWith('---') ? 'del' : 'ctx'
+    kind:
+      line.startsWith('+') && !line.startsWith('+++')
+        ? 'add'
+        : line.startsWith('-') && !line.startsWith('---')
+          ? 'del'
+          : 'ctx'
   }))
 )
 
@@ -64,7 +69,12 @@ async function stageAll() {
 
 async function commitChanges() {
   if (!workspaceStore.rootPath || !commitMessage.value.trim()) return
-  await gitStore.commit(workspaceStore.rootPath, commitMessage.value.trim(), effectiveGitIdentity.value.name, effectiveGitIdentity.value.email)
+  await gitStore.commit(
+    workspaceStore.rootPath,
+    commitMessage.value.trim(),
+    effectiveGitIdentity.value.name,
+    effectiveGitIdentity.value.email
+  )
   commitMessage.value = ''
 }
 
@@ -76,7 +86,12 @@ function requestSync(action: 'pull' | 'push') {
 async function handleCredentialsConfirm(credentials?: { username: string; password: string }) {
   if (!workspaceStore.rootPath || !pendingAction.value) return
   if (pendingAction.value === 'pull') {
-    await gitStore.pull(workspaceStore.rootPath, effectiveGitIdentity.value.name, effectiveGitIdentity.value.email, credentials)
+    await gitStore.pull(
+      workspaceStore.rootPath,
+      effectiveGitIdentity.value.name,
+      effectiveGitIdentity.value.email,
+      credentials
+    )
   } else {
     await gitStore.push(workspaceStore.rootPath, credentials)
   }
@@ -108,7 +123,9 @@ function statusColor(status: string): string {
       />
     </template>
 
-    <p v-if="!workspaceStore.isOpen" class="pa-4 text-caption text-medium-emphasis">{{ t('git.noWorkspace') }}</p>
+    <p v-if="!workspaceStore.isOpen" class="pa-4 text-caption text-medium-emphasis">
+      {{ t('git.noWorkspace') }}
+    </p>
 
     <AppEmptyState
       v-else-if="!gitStore.isRepo"
@@ -153,7 +170,9 @@ function statusColor(status: string): string {
       <v-tabs v-model="activeTab" density="compact" class="px-2">
         <v-tab value="changes">
           {{ t('git.changes') }}
-          <span v-if="gitStore.status?.files.length" class="antiphon-tab-count">{{ gitStore.status.files.length }}</span>
+          <span v-if="gitStore.status?.files.length" class="antiphon-tab-count">{{
+            gitStore.status.files.length
+          }}</span>
         </v-tab>
         <v-tab value="log">{{ t('git.history') }}</v-tab>
       </v-tabs>
@@ -171,9 +190,13 @@ function statusColor(status: string): string {
             <template v-if="unstagedFiles.length > 0">
               <div class="px-3 py-1 d-flex align-center">
                 <span class="antiphon-git-group">{{ t('git.unstagedTitle') }}</span>
-                <v-chip size="x-small" variant="tonal" class="ml-2">{{ unstagedFiles.length }}</v-chip>
+                <v-chip size="x-small" variant="tonal" class="ml-2">{{
+                  unstagedFiles.length
+                }}</v-chip>
                 <v-spacer />
-                <v-btn size="x-small" variant="text" class="text-none" @click="stageAll">{{ t('git.stageAll') }}</v-btn>
+                <v-btn size="x-small" variant="text" class="text-none" @click="stageAll">{{
+                  t('git.stageAll')
+                }}</v-btn>
               </div>
               <div
                 v-for="file in unstagedFiles"
@@ -181,7 +204,13 @@ function statusColor(status: string): string {
                 class="d-flex align-center ga-2 px-3 py-1 antiphon-git-row"
                 @click="viewDiff(file.path)"
               >
-                <v-chip size="x-small" :color="statusColor(file.status)" variant="tonal" class="antiphon-mono justify-center" style="min-width: 30px">
+                <v-chip
+                  size="x-small"
+                  :color="statusColor(file.status)"
+                  variant="tonal"
+                  class="antiphon-mono justify-center"
+                  style="min-width: 30px"
+                >
                   {{ file.status.charAt(0).toUpperCase() }}
                 </v-chip>
                 <span class="text-body-2 text-truncate flex-grow-1">{{ file.path }}</span>
@@ -199,7 +228,9 @@ function statusColor(status: string): string {
             <template v-if="stagedFiles.length > 0">
               <div class="px-3 py-1 d-flex align-center mt-2">
                 <span class="antiphon-git-group">{{ t('git.stagedTitle') }}</span>
-                <v-chip size="x-small" color="success" variant="tonal" class="ml-2">{{ stagedFiles.length }}</v-chip>
+                <v-chip size="x-small" color="success" variant="tonal" class="ml-2">{{
+                  stagedFiles.length
+                }}</v-chip>
               </div>
               <div
                 v-for="file in stagedFiles"
@@ -207,7 +238,13 @@ function statusColor(status: string): string {
                 class="d-flex align-center ga-2 px-3 py-1 antiphon-git-row"
                 @click="viewDiff(file.path)"
               >
-                <v-chip size="x-small" color="success" variant="tonal" class="antiphon-mono justify-center" style="min-width: 30px">
+                <v-chip
+                  size="x-small"
+                  color="success"
+                  variant="tonal"
+                  class="antiphon-mono justify-center"
+                  style="min-width: 30px"
+                >
                   {{ file.status.charAt(0).toUpperCase() }}
                 </v-chip>
                 <span class="text-body-2 text-truncate flex-grow-1">{{ file.path }}</span>
@@ -224,16 +261,25 @@ function statusColor(status: string): string {
 
             <!-- Seçili dosyanın farkı — tonal kart -->
             <v-card v-if="gitStore.diffText" variant="tonal" class="ma-3 pa-3">
-              <div class="text-caption font-weight-bold text-medium-emphasis mb-1 antiphon-mono text-truncate">
+              <div
+                class="text-caption font-weight-bold text-medium-emphasis mb-1 antiphon-mono text-truncate"
+              >
                 {{ gitStore.selectedFile }}
               </div>
-              <pre class="antiphon-mono antiphon-diff text-caption"><div v-for="(line, i) in diffLines" :key="i" :class="`antiphon-diff-${line.kind}`">{{ line.text }}</div></pre>
+              <pre
+                class="antiphon-mono antiphon-diff text-caption"
+              ><div v-for="(line, i) in diffLines" :key="i" :class="`antiphon-diff-${line.kind}`">{{ line.text }}</div></pre>
             </v-card>
           </div>
         </v-window-item>
 
         <v-window-item value="log" class="h-100 overflow-y-auto">
-          <AppEmptyState v-if="gitStore.log.length === 0" size="compact" icon="mdi-history" :title="t('git.noCommits')" />
+          <AppEmptyState
+            v-if="gitStore.log.length === 0"
+            size="compact"
+            icon="mdi-history"
+            :title="t('git.noCommits')"
+          />
           <v-list v-else density="compact" bg-color="transparent">
             <v-list-item v-for="entry in gitStore.log" :key="entry.oid">
               <template #prepend>

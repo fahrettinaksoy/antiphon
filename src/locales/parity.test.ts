@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import tr from './tr'
+import { describe, expect, it } from 'vitest'
 import en from './en'
+import tr from './tr'
 
 // Bir mesaj nesnesinin tüm yaprak anahtarlarını "a.b.c" biçiminde düz listeye çevirir.
 function flatKeys(obj: Record<string, unknown>, prefix = ''): string[] {

@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
+import type { CollectionRunProgressEvent, CollectionRunResultDto } from '@shared/ipc-contract'
+import type { RequestTab } from '../../stores/tabs'
+import { nanoid } from 'nanoid'
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
+import { ipc } from '@/lib/ipc'
 import { useFormat } from '../../composables/useFormat'
-import { nanoid } from 'nanoid'
-import KeyValueEditor from '../request/KeyValueEditor.vue'
-import AuthPanel from '../request/AuthPanel.vue'
-import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
-import AppEmptyState from '../common/AppEmptyState.vue'
-import { useWorkspaceStore } from '../../stores/workspace'
 import { useEnvironmentsStore } from '../../stores/environments'
-import type { RequestTab } from '../../stores/tabs'
-import type { CollectionRunProgressEvent, CollectionRunResultDto } from '@shared/ipc-contract'
+import { useWorkspaceStore } from '../../stores/workspace'
+import AppEmptyState from '../common/AppEmptyState.vue'
+import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
+import AuthPanel from '../request/AuthPanel.vue'
+import KeyValueEditor from '../request/KeyValueEditor.vue'
 
 const tab = defineModel<RequestTab>({ required: true })
 const { t } = useI18n()
@@ -56,7 +56,12 @@ async function runCollection() {
   isRunning.value = true
   runId.value = nanoid(8)
   try {
-    await ipc.runCollection(runId.value, tab.value.requestPath, workspaceStore.rootPath, environmentsStore.activeVariables)
+    await ipc.runCollection(
+      runId.value,
+      tab.value.requestPath,
+      workspaceStore.rootPath,
+      environmentsStore.activeVariables
+    )
   } finally {
     isRunning.value = false
   }
@@ -85,7 +90,10 @@ onBeforeUnmount(() => unsubscribe?.())
         <div class="d-flex align-center ga-1 text-body-2 text-truncate">
           <template v-for="(seg, i) in segments" :key="i">
             <v-icon v-if="i > 0" icon="mdi-chevron-right" size="16" class="text-medium-emphasis" />
-            <span :class="i === segments.length - 1 ? 'font-weight-bold' : 'text-medium-emphasis'">{{ seg }}</span>
+            <span
+              :class="i === segments.length - 1 ? 'font-weight-bold' : 'text-medium-emphasis'"
+              >{{ seg }}</span
+            >
           </template>
         </div>
         <div class="text-caption text-medium-emphasis">
@@ -154,11 +162,25 @@ onBeforeUnmount(() => unsubscribe?.())
       <div v-else-if="activeSection === 'scripts'" class="flex-grow-1 d-flex overflow-hidden">
         <div class="antiphon-script-nav flex-shrink-0 bg-surface-light h-100">
           <v-list density="compact" bg-color="transparent" class="py-1">
-            <v-list-item :active="activeScript === 'pre'" rounded="lg" class="mx-1" @click="activeScript = 'pre'">
-              <v-list-item-title class="text-body-2">{{ t('collection.preRequest') }}</v-list-item-title>
+            <v-list-item
+              :active="activeScript === 'pre'"
+              rounded="lg"
+              class="mx-1"
+              @click="activeScript = 'pre'"
+            >
+              <v-list-item-title class="text-body-2">{{
+                t('collection.preRequest')
+              }}</v-list-item-title>
             </v-list-item>
-            <v-list-item :active="activeScript === 'post'" rounded="lg" class="mx-1" @click="activeScript = 'post'">
-              <v-list-item-title class="text-body-2">{{ t('collection.postResponse') }}</v-list-item-title>
+            <v-list-item
+              :active="activeScript === 'post'"
+              rounded="lg"
+              class="mx-1"
+              @click="activeScript = 'post'"
+            >
+              <v-list-item-title class="text-body-2">{{
+                t('collection.postResponse')
+              }}</v-list-item-title>
             </v-list-item>
           </v-list>
         </div>
@@ -191,37 +213,69 @@ onBeforeUnmount(() => unsubscribe?.())
       <!-- Runs -->
       <div v-else-if="activeSection === 'runs'" class="pa-4">
         <div class="d-flex align-center ga-3 mb-3">
-          <v-btn color="primary" variant="flat" size="small" :loading="isRunning" prepend-icon="mdi-play" class="text-none" @click="runCollection">
+          <v-btn
+            color="primary"
+            variant="flat"
+            size="small"
+            :loading="isRunning"
+            prepend-icon="mdi-play"
+            class="text-none"
+            @click="runCollection"
+          >
             {{ t('collection.run') }}
           </v-btn>
-          <span v-if="progress.total > 0" class="text-caption text-medium-emphasis">{{ progress.index }} / {{ progress.total }}</span>
+          <span v-if="progress.total > 0" class="text-caption text-medium-emphasis"
+            >{{ progress.index }} / {{ progress.total }}</span
+          >
           <v-spacer />
-          <v-chip v-if="results.length > 0" size="small" variant="tonal" :color="passCount() === results.length ? 'success' : 'warning'">
+          <v-chip
+            v-if="results.length > 0"
+            size="small"
+            variant="tonal"
+            :color="passCount() === results.length ? 'success' : 'warning'"
+          >
             {{ passCount() }}/{{ results.length }} {{ t('collection.passed') }}
           </v-chip>
         </div>
 
-        <v-progress-linear v-if="isRunning" :model-value="(progress.index / Math.max(progress.total, 1)) * 100" color="primary" rounded class="mb-3" />
+        <v-progress-linear
+          v-if="isRunning"
+          :model-value="(progress.index / Math.max(progress.total, 1)) * 100"
+          color="primary"
+          rounded
+          class="mb-3"
+        />
 
         <v-card v-if="results.length > 0" variant="tonal" class="py-1">
-        <v-list density="compact" bg-color="transparent">
-          <v-list-item v-for="result in results" :key="result.path">
-            <template #prepend>
-              <v-chip size="x-small" :color="statusColor(result)" variant="tonal" class="antiphon-mono mr-2" style="min-width: 46px; justify-content: center">
-                {{ result.status ?? 'ERR' }}
-              </v-chip>
-            </template>
-            <v-list-item-title class="text-body-2 d-flex ga-2 align-center">
-              <span class="antiphon-mono font-weight-bold text-caption">{{ result.method }}</span>
-              <span class="text-truncate">{{ result.name }}</span>
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption">
-              {{ fmt.ms(result.durationMs) }}
-              <span v-if="result.tests.length"> · {{ result.tests.filter((r) => r.passed).length }}/{{ result.tests.length }} test</span>
-              <span v-if="result.error" class="text-error"> · {{ result.error }}</span>
-            </v-list-item-subtitle>
-          </v-list-item>
-        </v-list>
+          <v-list density="compact" bg-color="transparent">
+            <v-list-item v-for="result in results" :key="result.path">
+              <template #prepend>
+                <v-chip
+                  size="x-small"
+                  :color="statusColor(result)"
+                  variant="tonal"
+                  class="antiphon-mono mr-2"
+                  style="min-width: 46px; justify-content: center"
+                >
+                  {{ result.status ?? 'ERR' }}
+                </v-chip>
+              </template>
+              <v-list-item-title class="text-body-2 d-flex ga-2 align-center">
+                <span class="antiphon-mono font-weight-bold text-caption">{{ result.method }}</span>
+                <span class="text-truncate">{{ result.name }}</span>
+              </v-list-item-title>
+              <v-list-item-subtitle class="text-caption">
+                {{ fmt.ms(result.durationMs) }}
+                <span v-if="result.tests.length">
+                  · {{ result.tests.filter((r) => r.passed).length }}/{{
+                    result.tests.length
+                  }}
+                  test</span
+                >
+                <span v-if="result.error" class="text-error"> · {{ result.error }}</span>
+              </v-list-item-subtitle>
+            </v-list-item>
+          </v-list>
         </v-card>
 
         <AppEmptyState

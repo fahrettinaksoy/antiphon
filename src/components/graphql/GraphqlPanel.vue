@@ -1,17 +1,18 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import { nanoid } from 'nanoid'
-import { buildClientSchema, getIntrospectionQuery, type GraphQLSchema, type IntrospectionQuery } from 'graphql'
-import KeyValueEditor from '../request/KeyValueEditor.vue'
-import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
-import ResponseViewer from '../response/ResponseViewer.vue'
-import AppEmptyState from '../common/AppEmptyState.vue'
-import SchemaExplorer from './SchemaExplorer.vue'
-import { useEnvironmentsStore } from '../../stores/environments'
-import { useFormat } from '../../composables/useFormat'
-import type { RequestTab } from '../../stores/tabs'
 import type { GraphqlSubscriptionEvent, HttpResponsePayload } from '@shared/ipc-contract'
+import type { GraphQLSchema, IntrospectionQuery } from 'graphql'
+import type { RequestTab } from '../../stores/tabs'
+import { buildClientSchema, getIntrospectionQuery } from 'graphql'
+import { nanoid } from 'nanoid'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { ipc } from '@/lib/ipc'
+import { useFormat } from '../../composables/useFormat'
+import { useEnvironmentsStore } from '../../stores/environments'
+import AppEmptyState from '../common/AppEmptyState.vue'
+import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
+import KeyValueEditor from '../request/KeyValueEditor.vue'
+import ResponseViewer from '../response/ResponseViewer.vue'
+import SchemaExplorer from './SchemaExplorer.vue'
 
 const tab = defineModel<RequestTab>({ required: true })
 const fmt = useFormat()
@@ -40,7 +41,10 @@ async function fetchSchema() {
       name: `${tab.value.name}__introspection`,
       method: 'POST',
       url: tab.value.url,
-      headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }, ...tab.value.headers],
+      headers: [
+        { key: 'Content-Type', value: 'application/json', enabled: true },
+        ...tab.value.headers
+      ],
       params: [],
       body: { mode: 'json', content: JSON.stringify({ query: getIntrospectionQuery() }) },
       auth: tab.value.auth,
@@ -68,7 +72,10 @@ async function executeQuery() {
       name: tab.value.name,
       method: 'POST',
       url: tab.value.url,
-      headers: [{ key: 'Content-Type', value: 'application/json', enabled: true }, ...tab.value.headers],
+      headers: [
+        { key: 'Content-Type', value: 'application/json', enabled: true },
+        ...tab.value.headers
+      ],
       params: [],
       body: { mode: 'json', content: JSON.stringify({ query: tab.value.graphqlQuery, variables }) },
       auth: tab.value.auth,
@@ -109,7 +116,13 @@ async function startSubscription() {
   subscriptionEvents.value = []
   let variables: Record<string, unknown> = {}
   if (tab.value.graphqlVariables.trim()) variables = JSON.parse(tab.value.graphqlVariables)
-  await ipc.subscribeGraphql(subscriptionConnectionId, deriveWsUrl(tab.value.url), tab.value.graphqlQuery, variables, tab.value.headers)
+  await ipc.subscribeGraphql(
+    subscriptionConnectionId,
+    deriveWsUrl(tab.value.url),
+    tab.value.graphqlQuery,
+    variables,
+    tab.value.headers
+  )
 }
 
 async function stopSubscription() {
@@ -146,13 +159,21 @@ onBeforeUnmount(() => {
         density="comfortable"
         hide-details
       />
-      <v-btn variant="tonal" :loading="isSchemaLoading" prepend-icon="mdi-file-tree-outline" class="text-none" @click="fetchSchema">
+      <v-btn
+        variant="tonal"
+        :loading="isSchemaLoading"
+        prepend-icon="mdi-file-tree-outline"
+        class="text-none"
+        @click="fetchSchema"
+      >
         Şemayı Getir
       </v-btn>
       <v-btn
         color="primary"
         :loading="isExecuting"
-        :prepend-icon="isSubscriptionQuery ? (isSubscribed ? 'mdi-stop' : 'mdi-access-point') : 'mdi-play'"
+        :prepend-icon="
+          isSubscriptionQuery ? (isSubscribed ? 'mdi-stop' : 'mdi-access-point') : 'mdi-play'
+        "
         class="text-none"
         @click="execute"
       >
@@ -169,7 +190,11 @@ onBeforeUnmount(() => {
         </v-tabs>
         <v-divider />
         <div class="flex-grow-1 overflow-hidden">
-          <SchemaExplorer v-if="leftPanelView === 'schema'" :schema="schema" :is-loading="isSchemaLoading" />
+          <SchemaExplorer
+            v-if="leftPanelView === 'schema'"
+            :schema="schema"
+            :is-loading="isSchemaLoading"
+          />
           <div v-else class="h-100 overflow-y-auto pa-3">
             <KeyValueEditor v-model="tab.headers" />
           </div>
@@ -178,19 +203,44 @@ onBeforeUnmount(() => {
       <v-divider vertical />
 
       <v-col cols="4" class="h-100 d-flex flex-column overflow-hidden">
-        <div lang="en" class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1">Query</div>
-        <CodeMirrorEditor v-model="tab.graphqlQuery" language="graphql" :graphql-schema="schema ?? undefined" style="height: 60%" />
+        <div
+          lang="en"
+          class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1"
+        >
+          Query
+        </div>
+        <CodeMirrorEditor
+          v-model="tab.graphqlQuery"
+          language="graphql"
+          :graphql-schema="schema ?? undefined"
+          style="height: 60%"
+        />
         <v-divider />
         <!-- lang="en": "Variables" VARİABLES değil VARIABLES olarak büyür. -->
-        <div lang="en" class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1">Variables</div>
+        <div
+          lang="en"
+          class="text-caption text-medium-emphasis text-uppercase font-weight-bold px-3 py-1"
+        >
+          Variables
+        </div>
         <CodeMirrorEditor v-model="tab.graphqlVariables" language="json" style="height: 30%" />
       </v-col>
       <v-divider vertical />
 
       <v-col cols="5" class="h-100 overflow-hidden">
-        <ResponseViewer v-if="!isSubscriptionQuery" :response="response" :is-loading="isExecuting" :error="executionError" />
+        <ResponseViewer
+          v-if="!isSubscriptionQuery"
+          :response="response"
+          :is-loading="isExecuting"
+          :error="executionError"
+        />
         <div v-else class="h-100 overflow-y-auto pa-3">
-          <v-chip size="small" :color="isSubscribed ? 'success' : 'medium-emphasis'" variant="tonal" class="mb-2">
+          <v-chip
+            size="small"
+            :color="isSubscribed ? 'success' : 'medium-emphasis'"
+            variant="tonal"
+            class="mb-2"
+          >
             {{ isSubscribed ? 'DİNLENİYOR' : 'DURDU' }}
           </v-chip>
           <p v-if="executionError" class="text-error text-body-2">{{ executionError }}</p>
@@ -198,7 +248,12 @@ onBeforeUnmount(() => {
             <span class="text-caption text-medium-emphasis">{{ fmt.time(event.timestamp) }}</span>
             <pre class="antiphon-mono text-body-2">{{ event.data }}</pre>
           </div>
-          <AppEmptyState v-if="subscriptionEvents.length === 0" size="compact" icon="mdi-lightning-bolt-outline" title="Henüz event yok" />
+          <AppEmptyState
+            v-if="subscriptionEvents.length === 0"
+            size="compact"
+            icon="mdi-lightning-bolt-outline"
+            title="Henüz event yok"
+          />
         </div>
       </v-col>
     </v-row>

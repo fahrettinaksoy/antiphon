@@ -1,5 +1,6 @@
-import { createHmac } from 'node:crypto'
 import type { Auth } from '@schema/request'
+import { Buffer } from 'node:buffer'
+import { createHmac } from 'node:crypto'
 
 function base64url(input: Buffer | string): string {
   return Buffer.from(input).toString('base64url')
@@ -9,7 +10,9 @@ function signJwtHs256(secret: string, payload: Record<string, unknown>): string 
   const header = { alg: 'HS256', typ: 'JWT' }
   const encodedHeader = base64url(JSON.stringify(header))
   const encodedPayload = base64url(JSON.stringify(payload))
-  const signature = createHmac('sha256', secret).update(`${encodedHeader}.${encodedPayload}`).digest('base64url')
+  const signature = createHmac('sha256', secret)
+    .update(`${encodedHeader}.${encodedPayload}`)
+    .digest('base64url')
   return `${encodedHeader}.${encodedPayload}.${signature}`
 }
 

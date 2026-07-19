@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { onBeforeUnmount, ref } from 'vue'
-import { nanoid } from 'nanoid'
-import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
-import AppEmptyState from '../common/AppEmptyState.vue'
+import type {
+  McpPromptSummaryDto,
+  McpResourceSummaryDto,
+  McpToolSummaryDto
+} from '@shared/ipc-contract'
 import type { RequestTab } from '../../stores/tabs'
-import type { McpPromptSummaryDto, McpResourceSummaryDto, McpToolSummaryDto } from '@shared/ipc-contract'
+import { nanoid } from 'nanoid'
+import { onBeforeUnmount, ref } from 'vue'
+import { ipc } from '@/lib/ipc'
+import AppEmptyState from '../common/AppEmptyState.vue'
+import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
 
 const tab = defineModel<RequestTab>({ required: true })
 
@@ -134,10 +138,24 @@ onBeforeUnmount(() => {
         hide-details
         :disabled="isConnected"
       />
-      <v-btn v-if="!isConnected" color="primary" :loading="isConnecting" prepend-icon="mdi-connection" class="text-none" @click="connect">
+      <v-btn
+        v-if="!isConnected"
+        color="primary"
+        :loading="isConnecting"
+        prepend-icon="mdi-connection"
+        class="text-none"
+        @click="connect"
+      >
         Bağlan
       </v-btn>
-      <v-btn v-else color="error" variant="tonal" prepend-icon="mdi-close-circle-outline" class="text-none" @click="disconnect">
+      <v-btn
+        v-else
+        color="error"
+        variant="tonal"
+        prepend-icon="mdi-close-circle-outline"
+        class="text-none"
+        @click="disconnect"
+      >
         Kes
       </v-btn>
     </div>
@@ -170,10 +188,16 @@ onBeforeUnmount(() => {
                   :active="selectedTool?.name === toolItem.name"
                   @click="selectTool(toolItem)"
                 >
-                  <v-list-item-title class="antiphon-mono text-body-2">{{ toolItem.name }}</v-list-item-title>
-                  <v-list-item-subtitle class="text-caption">{{ toolItem.description }}</v-list-item-subtitle>
+                  <v-list-item-title class="antiphon-mono text-body-2">{{
+                    toolItem.name
+                  }}</v-list-item-title>
+                  <v-list-item-subtitle class="text-caption">{{
+                    toolItem.description
+                  }}</v-list-item-subtitle>
                 </v-list-item>
-                <p v-if="tools.length === 0" class="text-caption text-disabled pa-3">Bu sunucu tool sunmuyor</p>
+                <p v-if="tools.length === 0" class="text-caption text-disabled pa-3">
+                  Bu sunucu tool sunmuyor
+                </p>
               </v-list>
             </v-col>
             <v-divider vertical />
@@ -182,14 +206,24 @@ onBeforeUnmount(() => {
                 <div class="text-caption text-medium-emphasis px-3 py-1">Argümanlar (JSON)</div>
                 <CodeMirrorEditor v-model="toolArgsJson" language="json" style="height: 35%" />
                 <div class="px-3 py-2">
-                  <v-btn color="primary" size="small" :loading="isCallingTool" class="text-none" @click="callTool">Çağır</v-btn>
+                  <v-btn
+                    color="primary"
+                    size="small"
+                    :loading="isCallingTool"
+                    class="text-none"
+                    @click="callTool"
+                    >Çağır</v-btn
+                  >
                 </div>
                 <v-divider />
                 <div class="flex-grow-1 overflow-y-auto pa-3">
                   <pre class="antiphon-mono text-body-2">{{ toolResult }}</pre>
                 </div>
               </template>
-              <div v-else class="d-flex align-center justify-center flex-grow-1 text-medium-emphasis text-body-2">
+              <div
+                v-else
+                class="d-flex align-center justify-center flex-grow-1 text-medium-emphasis text-body-2"
+              >
                 Bir tool seçin
               </div>
             </v-col>
@@ -206,10 +240,16 @@ onBeforeUnmount(() => {
                   :active="selectedResourceUri === resource.uri"
                   @click="readResource(resource.uri)"
                 >
-                  <v-list-item-title class="text-body-2">{{ resource.name ?? resource.uri }}</v-list-item-title>
-                  <v-list-item-subtitle class="text-caption antiphon-mono">{{ resource.uri }}</v-list-item-subtitle>
+                  <v-list-item-title class="text-body-2">{{
+                    resource.name ?? resource.uri
+                  }}</v-list-item-title>
+                  <v-list-item-subtitle class="text-caption antiphon-mono">{{
+                    resource.uri
+                  }}</v-list-item-subtitle>
                 </v-list-item>
-                <p v-if="resources.length === 0" class="text-caption text-disabled pa-3">Bu sunucu resource sunmuyor</p>
+                <p v-if="resources.length === 0" class="text-caption text-disabled pa-3">
+                  Bu sunucu resource sunmuyor
+                </p>
               </v-list>
             </v-col>
             <v-divider vertical />
@@ -222,10 +262,16 @@ onBeforeUnmount(() => {
         <v-window-item value="prompts" class="h-100 overflow-y-auto">
           <v-list density="compact">
             <v-list-item v-for="prompt in prompts" :key="prompt.name">
-              <v-list-item-title class="antiphon-mono text-body-2">{{ prompt.name }}</v-list-item-title>
-              <v-list-item-subtitle class="text-caption">{{ prompt.description }}</v-list-item-subtitle>
+              <v-list-item-title class="antiphon-mono text-body-2">{{
+                prompt.name
+              }}</v-list-item-title>
+              <v-list-item-subtitle class="text-caption">{{
+                prompt.description
+              }}</v-list-item-subtitle>
             </v-list-item>
-            <p v-if="prompts.length === 0" class="text-caption text-disabled pa-3">Bu sunucu prompt sunmuyor</p>
+            <p v-if="prompts.length === 0" class="text-caption text-disabled pa-3">
+              Bu sunucu prompt sunmuyor
+            </p>
           </v-list>
         </v-window-item>
       </v-window>

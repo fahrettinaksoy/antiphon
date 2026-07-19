@@ -1,6 +1,6 @@
-import { ipc } from '@/lib/ipc'
-import { defineStore } from 'pinia'
 import type { GitCommitSummaryDto, GitStatusSummaryDto } from '@shared/ipc-contract'
+import { defineStore } from 'pinia'
+import { ipc } from '@/lib/ipc'
 
 export const useGitStore = defineStore('git', {
   state: () => ({
@@ -52,7 +52,12 @@ export const useGitStore = defineStore('git', {
       await ipc.commitGit(dir, message, authorName, authorEmail)
       await this.refresh(dir)
     },
-    async pull(dir: string, authorName: string, authorEmail: string, credentials?: { username: string; password: string }) {
+    async pull(
+      dir: string,
+      authorName: string,
+      authorEmail: string,
+      credentials?: { username: string; password: string }
+    ) {
       this.isSyncing = true
       try {
         await ipc.pullGit(dir, authorName, authorEmail, credentials)

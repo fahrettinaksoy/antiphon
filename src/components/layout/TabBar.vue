@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { useTabsStore, type TabProtocol } from '../../stores/tabs'
+import type { TabProtocol } from '../../stores/tabs'
+import { useTabsStore } from '../../stores/tabs'
 
 const tabsStore = useTabsStore()
 
@@ -21,15 +22,40 @@ const protocolIcon: Record<TabProtocol, string> = {
       :class="{ 'antiphon-tab--active': tab.id === tabsStore.activeTabId }"
       @click="tabsStore.setActiveTab(tab.id)"
     >
-      <v-icon v-if="tab.kind === 'collection'" icon="mdi-folder-outline" size="14" color="warning" />
-      <v-icon v-else-if="tab.kind === 'environment'" icon="mdi-layers-triple-outline" size="14" color="primary" />
-      <v-icon v-else-if="tab.protocol !== 'http'" :icon="protocolIcon[tab.protocol]" size="14" color="secondary" />
-      <span v-else class="text-caption antiphon-mono font-weight-bold" :class="`text-method-${tab.method.toLowerCase()}`">
+      <v-icon
+        v-if="tab.kind === 'collection'"
+        icon="mdi-folder-outline"
+        size="14"
+        color="warning"
+      />
+      <v-icon
+        v-else-if="tab.kind === 'environment'"
+        icon="mdi-layers-triple-outline"
+        size="14"
+        color="primary"
+      />
+      <v-icon
+        v-else-if="tab.protocol !== 'http'"
+        :icon="protocolIcon[tab.protocol]"
+        size="14"
+        color="secondary"
+      />
+      <span
+        v-else
+        class="text-caption antiphon-mono font-weight-bold"
+        :class="`text-method-${tab.method.toLowerCase()}`"
+      >
         {{ tab.method }}
       </span>
       <span class="text-body-2 text-truncate" style="max-width: 140px">{{ tab.name }}</span>
       <span v-if="tab.isDirty" class="antiphon-dirty-dot" />
-      <v-btn icon="mdi-close" size="x-small" variant="text" density="compact" @click.stop="tabsStore.closeTab(tab.id)" />
+      <v-btn
+        icon="mdi-close"
+        size="x-small"
+        variant="text"
+        density="compact"
+        @click.stop="tabsStore.closeTab(tab.id)"
+      />
     </div>
 
     <v-menu>
@@ -38,19 +64,34 @@ const protocolIcon: Record<TabProtocol, string> = {
       </template>
       <v-list density="compact">
         <!-- Boşta (kaydedilmemiş) sekme açılır; Kaydet ile konum seçilerek dosyalanır. -->
-        <v-list-item prepend-icon="mdi-send-variant-outline" @click="tabsStore.openNewTab('Yeni İstek', 'http')">
+        <v-list-item
+          prepend-icon="mdi-send-variant-outline"
+          @click="tabsStore.openNewTab('Yeni İstek', 'http')"
+        >
           <v-list-item-title>HTTP İsteği</v-list-item-title>
         </v-list-item>
-        <v-list-item prepend-icon="mdi-swap-vertical-bold" @click="tabsStore.openNewTab('Yeni WebSocket', 'ws')">
+        <v-list-item
+          prepend-icon="mdi-swap-vertical-bold"
+          @click="tabsStore.openNewTab('Yeni WebSocket', 'ws')"
+        >
           <v-list-item-title>WebSocket Bağlantısı</v-list-item-title>
         </v-list-item>
-        <v-list-item prepend-icon="mdi-access-point" @click="tabsStore.openNewTab('Yeni SSE', 'sse')">
+        <v-list-item
+          prepend-icon="mdi-access-point"
+          @click="tabsStore.openNewTab('Yeni SSE', 'sse')"
+        >
           <v-list-item-title>SSE Akışı</v-list-item-title>
         </v-list-item>
-        <v-list-item prepend-icon="mdi-graphql" @click="tabsStore.openNewTab('Yeni GraphQL', 'graphql')">
+        <v-list-item
+          prepend-icon="mdi-graphql"
+          @click="tabsStore.openNewTab('Yeni GraphQL', 'graphql')"
+        >
           <v-list-item-title>GraphQL İsteği</v-list-item-title>
         </v-list-item>
-        <v-list-item prepend-icon="mdi-hexagon-multiple-outline" @click="tabsStore.openNewTab('Yeni MCP', 'mcp')">
+        <v-list-item
+          prepend-icon="mdi-hexagon-multiple-outline"
+          @click="tabsStore.openNewTab('Yeni MCP', 'mcp')"
+        >
           <v-list-item-title>MCP Bağlantısı</v-list-item-title>
         </v-list-item>
       </v-list>
@@ -85,7 +126,9 @@ const protocolIcon: Record<TabProtocol, string> = {
   cursor: pointer;
   opacity: 0.7;
   border-radius: 8px 8px 0 0;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
 }
 .antiphon-tab:hover {
   opacity: 0.9;

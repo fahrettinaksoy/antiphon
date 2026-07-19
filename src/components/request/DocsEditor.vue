@@ -1,11 +1,11 @@
 <script setup lang="ts">
+import type { EditorView } from 'codemirror'
+import DOMPurify from 'dompurify'
+import { marked } from 'marked'
 // İstek dokümantasyonu editörü (Postman "Docs" karşılığı):
 // üstte markdown biçimlendirme araç çubuğu, sağda iki editör türü arasında geçiş —
 // "Markdown" (kaynak, CodeMirror) ve "Önizleme" (render edilmiş markdown).
 import { computed, ref } from 'vue'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
-import type { EditorView } from 'codemirror'
 import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
 
 const docs = defineModel<string>({ required: true })
@@ -45,7 +45,8 @@ function prefixLines(prefix: string) {
     const start = view.state.doc.lineAt(from).number
     const end = view.state.doc.lineAt(to).number
     const changes = []
-    for (let n = start; n <= end; n++) changes.push({ from: view.state.doc.line(n).from, insert: prefix })
+    for (let n = start; n <= end; n++)
+      changes.push({ from: view.state.doc.line(n).from, insert: prefix })
     view.dispatch({ changes })
   })
 }
@@ -71,7 +72,10 @@ function insertBlock(text: string) {
   withView((view) => {
     const line = view.state.doc.lineAt(view.state.selection.main.to)
     const insert = `\n\n${text}\n`
-    view.dispatch({ changes: { from: line.to, insert }, selection: { anchor: line.to + insert.length } })
+    view.dispatch({
+      changes: { from: line.to, insert },
+      selection: { anchor: line.to + insert.length }
+    })
   })
 }
 
@@ -100,7 +104,13 @@ const renderedDocs = computed(() => {
       <template v-if="editorMode === 'edit'">
         <v-menu>
           <template #activator="{ props: menuProps }">
-            <v-btn v-bind="menuProps" size="small" variant="text" append-icon="mdi-chevron-down" class="text-none">
+            <v-btn
+              v-bind="menuProps"
+              size="small"
+              variant="text"
+              append-icon="mdi-chevron-down"
+              class="text-none"
+            >
               Metin stili
             </v-btn>
           </template>
@@ -113,17 +123,83 @@ const renderedDocs = computed(() => {
 
         <v-divider vertical inset class="mx-1" />
 
-        <v-btn icon="mdi-format-bold" size="small" variant="text" title="Kalın" @click="wrapSelection('**')" />
-        <v-btn icon="mdi-format-italic" size="small" variant="text" title="İtalik" @click="wrapSelection('*')" />
-        <v-btn icon="mdi-format-strikethrough" size="small" variant="text" title="Üstü çizili" @click="wrapSelection('~~')" />
-        <v-btn icon="mdi-format-list-bulleted" size="small" variant="text" title="Madde listesi" @click="prefixLines('- ')" />
-        <v-btn icon="mdi-format-list-numbered" size="small" variant="text" title="Numaralı liste" @click="prefixLines('1. ')" />
-        <v-btn icon="mdi-table" size="small" variant="text" title="Tablo" @click="insertBlock(TABLE_TEMPLATE)" />
-        <v-btn icon="mdi-image-outline" size="small" variant="text" title="Görsel" @click="wrapSelection('![', '](url)')" />
-        <v-btn icon="mdi-link-variant" size="small" variant="text" title="Bağlantı" @click="wrapSelection('[', '](url)')" />
-        <v-btn icon="mdi-format-quote-close" size="small" variant="text" title="Alıntı" @click="prefixLines('> ')" />
-        <v-btn icon="mdi-code-tags" size="small" variant="text" title="Satır içi kod" @click="wrapSelection('`')" />
-        <v-btn icon="mdi-code-braces" size="small" variant="text" title="Kod bloğu" @click="insertBlock(CODE_BLOCK_TEMPLATE)" />
+        <v-btn
+          icon="mdi-format-bold"
+          size="small"
+          variant="text"
+          title="Kalın"
+          @click="wrapSelection('**')"
+        />
+        <v-btn
+          icon="mdi-format-italic"
+          size="small"
+          variant="text"
+          title="İtalik"
+          @click="wrapSelection('*')"
+        />
+        <v-btn
+          icon="mdi-format-strikethrough"
+          size="small"
+          variant="text"
+          title="Üstü çizili"
+          @click="wrapSelection('~~')"
+        />
+        <v-btn
+          icon="mdi-format-list-bulleted"
+          size="small"
+          variant="text"
+          title="Madde listesi"
+          @click="prefixLines('- ')"
+        />
+        <v-btn
+          icon="mdi-format-list-numbered"
+          size="small"
+          variant="text"
+          title="Numaralı liste"
+          @click="prefixLines('1. ')"
+        />
+        <v-btn
+          icon="mdi-table"
+          size="small"
+          variant="text"
+          title="Tablo"
+          @click="insertBlock(TABLE_TEMPLATE)"
+        />
+        <v-btn
+          icon="mdi-image-outline"
+          size="small"
+          variant="text"
+          title="Görsel"
+          @click="wrapSelection('![', '](url)')"
+        />
+        <v-btn
+          icon="mdi-link-variant"
+          size="small"
+          variant="text"
+          title="Bağlantı"
+          @click="wrapSelection('[', '](url)')"
+        />
+        <v-btn
+          icon="mdi-format-quote-close"
+          size="small"
+          variant="text"
+          title="Alıntı"
+          @click="prefixLines('> ')"
+        />
+        <v-btn
+          icon="mdi-code-tags"
+          size="small"
+          variant="text"
+          title="Satır içi kod"
+          @click="wrapSelection('`')"
+        />
+        <v-btn
+          icon="mdi-code-braces"
+          size="small"
+          variant="text"
+          title="Kod bloğu"
+          @click="insertBlock(CODE_BLOCK_TEMPLATE)"
+        />
       </template>
 
       <v-spacer />
@@ -149,7 +225,11 @@ const renderedDocs = computed(() => {
 
     <!-- Render edilmiş önizleme -->
     <!-- eslint-disable-next-line vue/no-v-html -- DOMPurify ile temizleniyor -->
-    <div v-else class="antiphon-docs-preview flex-grow-1 overflow-y-auto pa-4" v-html="renderedDocs" />
+    <div
+      v-else
+      class="antiphon-docs-preview flex-grow-1 overflow-y-auto pa-4"
+      v-html="renderedDocs"
+    />
   </div>
 </template>
 

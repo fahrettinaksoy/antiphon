@@ -1,8 +1,13 @@
-import { ipc } from '@/lib/ipc'
+import type {
+  CreateWorkspaceInput,
+  WorkspaceMetaDto,
+  WorkspaceSyncDirection,
+  WorkspaceUpdateInput
+} from '@shared/ipc-contract'
 import { defineStore } from 'pinia'
-import type { CreateWorkspaceInput, WorkspaceMetaDto, WorkspaceSyncDirection, WorkspaceUpdateInput } from '@shared/ipc-contract'
-import { useWorkspaceStore } from './workspace'
+import { ipc } from '@/lib/ipc'
 import { useEnvironmentsStore } from './environments'
+import { useWorkspaceStore } from './workspace'
 
 // Çalışma alanları kayıt defteri (registry). Her zaman en az bir yerel "My Workspace"
 // bulunur; kullanıcı yeni alanlar (yerel / GitHub Gist / WebDAV) ekleyip silebilir.

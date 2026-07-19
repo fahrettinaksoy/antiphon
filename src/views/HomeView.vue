@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import type { WorkspaceMetaDto } from '@shared/ipc-contract'
 // Ana Sayfa — genel sayfa (sol panel yok): son etkinlik, favoriler ve son kullanılan
 // çalışma alanlarına hızlı erişim.
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useI18n } from '@/composables/i18n'
-import { useWorkspacesStore } from '../stores/workspaces'
+import AppEmptyState from '../components/common/AppEmptyState.vue'
+import { useFormat } from '../composables/useFormat'
 import { useHistoryStore } from '../stores/history'
 import { useTabsStore } from '../stores/tabs'
 import { useUiStore } from '../stores/ui'
-import { useFormat } from '../composables/useFormat'
-import AppEmptyState from '../components/common/AppEmptyState.vue'
-import type { WorkspaceMetaDto } from '@shared/ipc-contract'
+import { useWorkspacesStore } from '../stores/workspaces'
 
 const router = useRouter()
 const { t } = useI18n()
@@ -20,8 +20,12 @@ const tabsStore = useTabsStore()
 const uiStore = useUiStore()
 const fmt = useFormat()
 
-const favoriteWorkspaces = computed(() => workspacesStore.list.filter((w) => uiStore.favoriteWorkspaceIds.includes(w.id)))
-const recentWorkspaces = computed(() => [...workspacesStore.list].sort((a, b) => b.lastOpenedAt - a.lastOpenedAt).slice(0, 5))
+const favoriteWorkspaces = computed(() =>
+  workspacesStore.list.filter((w) => uiStore.favoriteWorkspaceIds.includes(w.id))
+)
+const recentWorkspaces = computed(() =>
+  [...workspacesStore.list].sort((a, b) => b.lastOpenedAt - a.lastOpenedAt).slice(0, 5)
+)
 const latestActivity = computed(() => historyStore.entries.slice(0, 8))
 
 function visibilityIcon(meta: WorkspaceMetaDto): string {
@@ -77,7 +81,12 @@ const statusColor = (status: number | null) => {
               {{ historyStore.entries.length }}
             </v-chip>
             <v-spacer />
-            <v-btn size="x-small" variant="text" class="text-none" @click="uiStore.toggleHistoryDrawer">
+            <v-btn
+              size="x-small"
+              variant="text"
+              class="text-none"
+              @click="uiStore.toggleHistoryDrawer"
+            >
               {{ t('home.viewAll') }}
             </v-btn>
           </div>
@@ -104,9 +113,13 @@ const statusColor = (status: number | null) => {
             >
               {{ entry.status ?? 'ERR' }}
             </v-chip>
-            <span class="antiphon-mono font-weight-bold text-caption flex-shrink-0">{{ entry.method }}</span>
+            <span class="antiphon-mono font-weight-bold text-caption flex-shrink-0">{{
+              entry.method
+            }}</span>
             <span class="text-body-2 text-truncate flex-grow-1">{{ entry.url }}</span>
-            <span class="text-caption text-medium-emphasis flex-shrink-0">{{ fmt.relative(entry.sentAt) }}</span>
+            <span class="text-caption text-medium-emphasis flex-shrink-0">{{
+              fmt.relative(entry.sentAt)
+            }}</span>
           </div>
         </v-card>
       </v-col>
@@ -117,7 +130,12 @@ const statusColor = (status: number | null) => {
           <div class="d-flex align-center mb-3">
             <div class="text-subtitle-2">{{ t('home.favorites') }}</div>
             <v-spacer />
-            <v-btn size="x-small" variant="text" class="text-none" @click="router.push('/workspaces')">
+            <v-btn
+              size="x-small"
+              variant="text"
+              class="text-none"
+              @click="router.push('/workspaces')"
+            >
               {{ t('home.viewAll') }}
             </v-btn>
           </div>
@@ -137,9 +155,16 @@ const statusColor = (status: number | null) => {
             <v-icon icon="mdi-star" size="18" color="warning" />
             <div class="flex-grow-1" style="min-width: 0">
               <div class="text-body-2 font-weight-medium text-truncate">{{ meta.name }}</div>
-              <div class="text-caption text-medium-emphasis">{{ fmt.relative(meta.lastOpenedAt) }}</div>
+              <div class="text-caption text-medium-emphasis">
+                {{ fmt.relative(meta.lastOpenedAt) }}
+              </div>
             </div>
-            <v-chip v-if="meta.id === workspacesStore.activeId" size="x-small" color="primary" variant="tonal">
+            <v-chip
+              v-if="meta.id === workspacesStore.activeId"
+              size="x-small"
+              color="primary"
+              variant="tonal"
+            >
               {{ t('workspace.activeBadge') }}
             </v-chip>
           </div>
@@ -150,7 +175,12 @@ const statusColor = (status: number | null) => {
           <div class="d-flex align-center mb-3">
             <div class="text-subtitle-2">{{ t('home.recentWorkspaces') }}</div>
             <v-spacer />
-            <v-btn size="x-small" variant="text" class="text-none" @click="router.push('/workspaces')">
+            <v-btn
+              size="x-small"
+              variant="text"
+              class="text-none"
+              @click="router.push('/workspaces')"
+            >
               {{ t('home.viewAll') }}
             </v-btn>
           </div>
@@ -163,9 +193,16 @@ const statusColor = (status: number | null) => {
             <v-icon :icon="visibilityIcon(meta)" size="18" class="text-medium-emphasis" />
             <div class="flex-grow-1" style="min-width: 0">
               <div class="text-body-2 font-weight-medium text-truncate">{{ meta.name }}</div>
-              <div class="text-caption text-medium-emphasis">{{ fmt.relative(meta.lastOpenedAt) }}</div>
+              <div class="text-caption text-medium-emphasis">
+                {{ fmt.relative(meta.lastOpenedAt) }}
+              </div>
             </div>
-            <v-chip v-if="meta.id === workspacesStore.activeId" size="x-small" color="primary" variant="tonal">
+            <v-chip
+              v-if="meta.id === workspacesStore.activeId"
+              size="x-small"
+              color="primary"
+              variant="tonal"
+            >
               {{ t('workspace.activeBadge') }}
             </v-chip>
           </div>

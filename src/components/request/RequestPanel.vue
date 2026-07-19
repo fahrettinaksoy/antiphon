@@ -1,12 +1,12 @@
 <script setup lang="ts">
+import type { RequestTab } from '../../stores/tabs'
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import KeyValueEditor from './KeyValueEditor.vue'
-import BodyEditor from './BodyEditor.vue'
-import AuthPanel from './AuthPanel.vue'
-import DocsEditor from './DocsEditor.vue'
 import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
-import type { RequestTab } from '../../stores/tabs'
+import AuthPanel from './AuthPanel.vue'
+import BodyEditor from './BodyEditor.vue'
+import DocsEditor from './DocsEditor.vue'
+import KeyValueEditor from './KeyValueEditor.vue'
 
 const tab = defineModel<RequestTab>({ required: true })
 const { t } = useI18n()
@@ -63,10 +63,20 @@ const headersCount = computed(() => filledCount(tab.value.headers))
         <div class="d-flex h-100">
           <div class="antiphon-script-nav flex-shrink-0 bg-surface-light h-100">
             <v-list density="compact" bg-color="transparent" class="py-1">
-              <v-list-item :active="activeScript === 'pre'" rounded="lg" class="mx-1" @click="activeScript = 'pre'">
+              <v-list-item
+                :active="activeScript === 'pre'"
+                rounded="lg"
+                class="mx-1"
+                @click="activeScript = 'pre'"
+              >
                 <v-list-item-title class="text-body-2">Pre-request</v-list-item-title>
               </v-list-item>
-              <v-list-item :active="activeScript === 'post'" rounded="lg" class="mx-1" @click="activeScript = 'post'">
+              <v-list-item
+                :active="activeScript === 'post'"
+                rounded="lg"
+                class="mx-1"
+                @click="activeScript = 'post'"
+              >
                 <v-list-item-title class="text-body-2">Post-response</v-list-item-title>
               </v-list-item>
             </v-list>
@@ -100,7 +110,8 @@ const headersCount = computed(() => filledCount(tab.value.headers))
             <div>
               <div class="text-subtitle-2">HTTP sürümü</div>
               <p class="text-caption text-medium-emphasis mb-0">
-                İsteği göndermek için kullanılacak HTTP sürümü. Otomatik, ALPN ile HTTP/2 dener (proxy/özel TLS yokken).
+                İsteği göndermek için kullanılacak HTTP sürümü. Otomatik, ALPN ile HTTP/2 dener
+                (proxy/özel TLS yokken).
               </p>
             </div>
             <v-select
@@ -117,18 +128,33 @@ const headersCount = computed(() => filledCount(tab.value.headers))
             <div>
               <div class="text-subtitle-2">SSL sertifika doğrulaması</div>
               <p class="text-caption text-medium-emphasis mb-0">
-                İstek gönderilirken SSL sertifikaları doğrulanır; doğrulama hatası isteği iptal eder.
+                İstek gönderilirken SSL sertifikaları doğrulanır; doğrulama hatası isteği iptal
+                eder.
               </p>
             </div>
-            <v-switch v-model="tab.settings.verifySsl" density="compact" hide-details color="primary" class="flex-shrink-0" />
+            <v-switch
+              v-model="tab.settings.verifySsl"
+              density="compact"
+              hide-details
+              color="primary"
+              class="flex-shrink-0"
+            />
           </div>
 
           <div class="d-flex align-center justify-space-between ga-4">
             <div>
               <div class="text-subtitle-2">Yönlendirmeleri otomatik izle</div>
-              <p class="text-caption text-medium-emphasis mb-0">HTTP 3xx yanıtları yönlendirme olarak izlenir.</p>
+              <p class="text-caption text-medium-emphasis mb-0">
+                HTTP 3xx yanıtları yönlendirme olarak izlenir.
+              </p>
             </div>
-            <v-switch v-model="tab.settings.followRedirects" density="compact" hide-details color="primary" class="flex-shrink-0" />
+            <v-switch
+              v-model="tab.settings.followRedirects"
+              density="compact"
+              hide-details
+              color="primary"
+              class="flex-shrink-0"
+            />
           </div>
 
           <div class="d-flex align-center justify-space-between ga-4">
@@ -168,7 +194,9 @@ const headersCount = computed(() => filledCount(tab.value.headers))
           <div class="d-flex align-center justify-space-between ga-4">
             <div>
               <div class="text-subtitle-2">Yönlendirmede referer başlığını kaldır</div>
-              <p class="text-caption text-medium-emphasis mb-0">Bir yönlendirme olduğunda referer başlığı kaldırılır.</p>
+              <p class="text-caption text-medium-emphasis mb-0">
+                Bir yönlendirme olduğunda referer başlığı kaldırılır.
+              </p>
             </div>
             <v-switch
               v-model="tab.settings.removeRefererOnRedirect"
@@ -183,9 +211,17 @@ const headersCount = computed(() => filledCount(tab.value.headers))
           <div class="d-flex align-center justify-space-between ga-4">
             <div>
               <div class="text-subtitle-2">Katı HTTP ayrıştırıcı</div>
-              <p class="text-caption text-medium-emphasis mb-0">Geçersiz HTTP başlıkları içeren yanıtları reddet.</p>
+              <p class="text-caption text-medium-emphasis mb-0">
+                Geçersiz HTTP başlıkları içeren yanıtları reddet.
+              </p>
             </div>
-            <v-switch v-model="tab.settings.strictHttpParser" density="compact" hide-details color="primary" class="flex-shrink-0" />
+            <v-switch
+              v-model="tab.settings.strictHttpParser"
+              density="compact"
+              hide-details
+              color="primary"
+              class="flex-shrink-0"
+            />
           </div>
 
           <div class="d-flex align-center justify-space-between ga-4">
@@ -195,7 +231,13 @@ const headersCount = computed(() => filledCount(tab.value.headers))
                 URL'nin yolu ve sorgu parametreleri otomatik olarak yüzde-kodlanır.
               </p>
             </div>
-            <v-switch v-model="tab.settings.encodeUrl" density="compact" hide-details color="primary" class="flex-shrink-0" />
+            <v-switch
+              v-model="tab.settings.encodeUrl"
+              density="compact"
+              hide-details
+              color="primary"
+              class="flex-shrink-0"
+            />
           </div>
 
           <div class="d-flex align-center justify-space-between ga-4">
@@ -205,7 +247,13 @@ const headersCount = computed(() => filledCount(tab.value.headers))
                 Bu isteğin çerezleri kavanoza yazılmaz ve kavanozdaki çerezler bu isteğe eklenmez.
               </p>
             </div>
-            <v-switch v-model="tab.settings.disableCookieJar" density="compact" hide-details color="primary" class="flex-shrink-0" />
+            <v-switch
+              v-model="tab.settings.disableCookieJar"
+              density="compact"
+              hide-details
+              color="primary"
+              class="flex-shrink-0"
+            />
           </div>
 
           <div class="d-flex align-center justify-space-between ga-4">
@@ -215,13 +263,21 @@ const headersCount = computed(() => filledCount(tab.value.headers))
                 El sıkışma sırasında istemcinin yerine sunucunun şifre takımı sırası kullanılır.
               </p>
             </div>
-            <v-switch v-model="tab.settings.useServerCipherOrder" density="compact" hide-details color="primary" class="flex-shrink-0" />
+            <v-switch
+              v-model="tab.settings.useServerCipherOrder"
+              density="compact"
+              hide-details
+              color="primary"
+              class="flex-shrink-0"
+            />
           </div>
 
           <div class="d-flex align-center justify-space-between ga-4">
             <div>
               <div class="text-subtitle-2">En fazla yönlendirme sayısı</div>
-              <p class="text-caption text-medium-emphasis mb-0">İzlenecek yönlendirme sayısına üst sınır koyar.</p>
+              <p class="text-caption text-medium-emphasis mb-0">
+                İzlenecek yönlendirme sayısına üst sınır koyar.
+              </p>
             </div>
             <v-text-field
               v-model.number="tab.settings.maxRedirects"
@@ -239,7 +295,9 @@ const headersCount = computed(() => filledCount(tab.value.headers))
           <div class="d-flex align-center justify-space-between ga-4">
             <div>
               <div class="text-subtitle-2">Zaman aşımı (ms)</div>
-              <p class="text-caption text-medium-emphasis mb-0">İsteğin toplam süresine üst sınır; 0 = sınırsız.</p>
+              <p class="text-caption text-medium-emphasis mb-0">
+                İsteğin toplam süresine üst sınır; 0 = sınırsız.
+              </p>
             </div>
             <v-text-field
               v-model.number="tab.settings.timeoutMs"
@@ -257,7 +315,8 @@ const headersCount = computed(() => filledCount(tab.value.headers))
             <div>
               <div class="text-subtitle-2">El sıkışmada devre dışı TLS/SSL protokolleri</div>
               <p class="text-caption text-medium-emphasis mb-0">
-                Seçilen protokol sürümleri el sıkışma sırasında devre dışı bırakılır; diğerleri etkin kalır.
+                Seçilen protokol sürümleri el sıkışma sırasında devre dışı bırakılır; diğerleri
+                etkin kalır.
               </p>
             </div>
             <v-select
@@ -278,7 +337,8 @@ const headersCount = computed(() => filledCount(tab.value.headers))
             <div>
               <div class="text-subtitle-2">Şifre takımı seçimi</div>
               <p class="text-caption text-medium-emphasis mb-0">
-                Güvenli bağlantı kurarken kullanılacak şifre takımları (virgül veya boşlukla ayırın); boş = sistem varsayılanı.
+                Güvenli bağlantı kurarken kullanılacak şifre takımları (virgül veya boşlukla
+                ayırın); boş = sistem varsayılanı.
               </p>
             </div>
             <v-textarea

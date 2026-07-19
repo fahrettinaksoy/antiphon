@@ -1,15 +1,15 @@
 <script setup lang="ts">
+import type { Auth } from '@schema/request'
 import { computed } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import type { Auth } from '@schema/request'
-
-const auth = defineModel<Auth>({ required: true })
-const { t } = useI18n()
 
 // Koleksiyon, klasör ve istek editörlerinin ORTAK paneli. 'none' seçeneği bağlama göre
 // etiketlenir: koleksiyonda "Yok" (devralacak üst öğe yok), klasör ve isteklerde varsayılan
 // "Üst öğeden devral" — runner kalıtımı (resolveInheritedSettings) gerçekte böyle çözer.
 const props = defineProps<{ noneLabel?: string; noneHint?: string }>()
+const auth = defineModel<Auth>({ required: true })
+const { t } = useI18n()
+
 const noneTitle = computed(() => props.noneLabel ?? t('auth.inherit'))
 const noneHintText = computed(() => props.noneHint ?? t('auth.inheritHint'))
 
@@ -47,20 +47,44 @@ const selectedType = computed<Auth['type']>({
 
 <template>
   <div class="d-flex flex-column ga-3">
-    <v-select v-model="selectedType" :label="t('auth.type')" :items="authTypes" style="max-width: 280px" />
+    <v-select
+      v-model="selectedType"
+      :label="t('auth.type')"
+      :items="authTypes"
+      style="max-width: 280px"
+    />
 
     <template v-if="auth.type === 'basic'">
-      <v-text-field v-model="auth.username" :label="t('auth.username')" placeholder="kullanici-adi" />
-      <v-text-field v-model="auth.password" :label="t('auth.password')" type="password" placeholder="••••••••" />
+      <v-text-field
+        v-model="auth.username"
+        :label="t('auth.username')"
+        placeholder="kullanici-adi"
+      />
+      <v-text-field
+        v-model="auth.password"
+        :label="t('auth.password')"
+        type="password"
+        placeholder="••••••••"
+      />
     </template>
 
     <template v-else-if="auth.type === 'bearer'">
-      <v-text-field v-model="auth.token" :label="t('auth.token')" placeholder="eyJhbGciOiJIUzI1NiJ9…" class="antiphon-mono" />
+      <v-text-field
+        v-model="auth.token"
+        :label="t('auth.token')"
+        placeholder="eyJhbGciOiJIUzI1NiJ9…"
+        class="antiphon-mono"
+      />
     </template>
 
     <template v-else-if="auth.type === 'apiKey'">
       <v-text-field v-model="auth.key" label="Key" placeholder="X-API-Key" class="antiphon-mono" />
-      <v-text-field v-model="auth.value" label="Value" placeholder="gizli-anahtar-degeri" class="antiphon-mono" />
+      <v-text-field
+        v-model="auth.value"
+        label="Value"
+        placeholder="gizli-anahtar-degeri"
+        class="antiphon-mono"
+      />
       <v-btn-toggle
         v-model="auth.in"
         mandatory
@@ -74,7 +98,12 @@ const selectedType = computed<Auth['type']>({
     </template>
 
     <template v-else-if="auth.type === 'jwt'">
-      <v-text-field v-model="auth.secret" :label="t('auth.secret')" placeholder="gizli-imza-anahtari" class="antiphon-mono" />
+      <v-text-field
+        v-model="auth.secret"
+        :label="t('auth.secret')"
+        placeholder="gizli-imza-anahtari"
+        class="antiphon-mono"
+      />
     </template>
 
     <p v-else class="text-body-2 text-medium-emphasis">{{ noneHintText }}</p>

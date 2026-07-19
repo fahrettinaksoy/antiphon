@@ -1,0 +1,5 @@
+# Rust araç zinciri SABİTLENDİ — yerel geliştirme, CI ve release AYNI derleyiciyi kullanır.
+# Sürüm yükseltirken .github/workflows'daki `toolchain:` değeriyle BİRLİKTE güncelle.
+[toolchain]
+channel = "1.96.1"
+components = ["rustfmt", "clippy"]
