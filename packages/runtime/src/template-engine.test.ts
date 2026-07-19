@@ -1,10 +1,14 @@
-import { describe, it, expect } from 'vitest'
-import { resolveTemplate, extractSecretKeys, type TemplateContext } from './template-engine'
+import type { TemplateContext } from './template-engine'
+import { describe, expect, it } from 'vitest'
 import { cacheResponse } from './response-cache'
+import { extractSecretKeys, resolveTemplate } from './template-engine'
 
 describe('resolveTemplate', () => {
   it('resolves plain variables', () => {
-    const ctx: TemplateContext = { variables: { host: 'api.example.com' }, resolveSecret: () => undefined }
+    const ctx: TemplateContext = {
+      variables: { host: 'api.example.com' },
+      resolveSecret: () => undefined
+    }
     expect(resolveTemplate('https://{{host}}/ping', ctx)).toBe('https://api.example.com/ping')
   })
 
@@ -20,7 +24,10 @@ describe('resolveTemplate', () => {
   })
 
   it('resolves secrets via the injected resolver', () => {
-    const ctx: TemplateContext = { variables: {}, resolveSecret: (key) => (key === 'API_KEY' ? 'shh' : undefined) }
+    const ctx: TemplateContext = {
+      variables: {},
+      resolveSecret: (key) => (key === 'API_KEY' ? 'shh' : undefined)
+    }
     expect(resolveTemplate('key={{secret:API_KEY}}', ctx)).toBe('key=shh')
   })
 
@@ -32,7 +39,17 @@ describe('resolveTemplate', () => {
       headers: {},
       body: JSON.stringify({ token: 'abc123', user: { id: 42 } }),
       bodyEncoding: 'utf8',
-      timing: { prepare: 0, socketInit: 0, dns: 0, tcp: 0, tls: 0, ttfb: 0, download: 0, process: 0, total: 1 },
+      timing: {
+        prepare: 0,
+        socketInit: 0,
+        dns: 0,
+        tcp: 0,
+        tls: 0,
+        ttfb: 0,
+        download: 0,
+        process: 0,
+        total: 1
+      },
       sizeBytes: 10
     })
     const ctx: TemplateContext = { variables: {}, resolveSecret: () => undefined }
@@ -44,7 +61,12 @@ describe('resolveTemplate', () => {
 
 describe('extractSecretKeys', () => {
   it('finds unique secret keys referenced in text', () => {
-    const keys = extractSecretKeys(['{{secret:API_KEY}}', 'no secret here', '{{secret:API_KEY}}', '{{secret:OTHER}}'])
+    const keys = extractSecretKeys([
+      '{{secret:API_KEY}}',
+      'no secret here',
+      '{{secret:API_KEY}}',
+      '{{secret:OTHER}}'
+    ])
     expect(keys.sort()).toEqual(['API_KEY', 'OTHER'])
   })
 

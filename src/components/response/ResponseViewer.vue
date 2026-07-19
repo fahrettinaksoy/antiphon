@@ -1,16 +1,20 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { openSearchPanel } from '@codemirror/search'
-import type { EditorView } from 'codemirror'
-import { JSONPath } from 'jsonpath-plus'
-import { useI18n } from '@/composables/i18n'
 import type { HttpResponsePayload } from '@shared/ipc-contract'
+import type { EditorView } from 'codemirror'
+import { openSearchPanel } from '@codemirror/search'
+import { JSONPath } from 'jsonpath-plus'
+import { computed, ref, watch } from 'vue'
+import { useI18n } from '@/composables/i18n'
 import { useFormat } from '../../composables/useFormat'
 import AppEmptyState from '../common/AppEmptyState.vue'
 import AppLtr from '../common/AppLtr.vue'
 import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
 
-const props = defineProps<{ response: HttpResponsePayload | null; isLoading: boolean; error?: string | null }>()
+const props = defineProps<{
+  response: HttpResponsePayload | null
+  isLoading: boolean
+  error?: string | null
+}>()
 
 const { t } = useI18n()
 const fmt = useFormat()
@@ -60,7 +64,10 @@ const timingPhases = computed(() => {
 
 // Başlıkların yaklaşık boyutu ("k: v\r\n" baytları)
 const headersSizeBytes = computed(() =>
-  Object.entries(props.response?.headers ?? {}).reduce((sum, [key, value]) => sum + key.length + String(value).length + 4, 0)
+  Object.entries(props.response?.headers ?? {}).reduce(
+    (sum, [key, value]) => sum + key.length + String(value).length + 4,
+    0
+  )
 )
 
 // Ağ kartı satırları (yalnızca dolu alanlar)
@@ -75,7 +82,8 @@ const networkRows = computed(() => {
   if (net.cipherName) rows.push({ label: t('response.cipherName'), value: net.cipherName })
   if (net.certCn) rows.push({ label: t('response.certCn'), value: net.certCn })
   if (net.certIssuerCn) rows.push({ label: t('response.certIssuerCn'), value: net.certIssuerCn })
-  if (net.certValidUntil) rows.push({ label: t('response.certValidUntil'), value: net.certValidUntil })
+  if (net.certValidUntil)
+    rows.push({ label: t('response.certValidUntil'), value: net.certValidUntil })
   return rows
 })
 
@@ -112,9 +120,14 @@ const parsedJson = computed<unknown>(() => {
 const filterBarOpen = ref(false)
 const filterPath = ref('')
 const filteredJson = computed<unknown>(() => {
-  if (parsedJson.value === undefined || !filterBarOpen.value || !filterPath.value.trim()) return parsedJson.value
+  if (parsedJson.value === undefined || !filterBarOpen.value || !filterPath.value.trim())
+    return parsedJson.value
   try {
-    const results = JSONPath({ path: filterPath.value.trim(), json: parsedJson.value as never, wrap: true }) as unknown[]
+    const results = JSONPath({
+      path: filterPath.value.trim(),
+      json: parsedJson.value as never,
+      wrap: true
+    }) as unknown[]
     if (results.length === 0) return undefined
     return results.length === 1 ? results[0] : results
   } catch {
@@ -122,7 +135,11 @@ const filteredJson = computed<unknown>(() => {
   }
 })
 const filterHasNoMatch = computed(
-  () => filterBarOpen.value && filterPath.value.trim() !== '' && parsedJson.value !== undefined && filteredJson.value === undefined
+  () =>
+    filterBarOpen.value &&
+    filterPath.value.trim() !== '' &&
+    parsedJson.value !== undefined &&
+    filteredJson.value === undefined
 )
 
 const displayBody = computed(() => {
@@ -176,7 +193,14 @@ function makeTreeItem(value: unknown, key: string): JsonTreeItem {
   const id = `n${treeNodeId++}`
   if (Array.isArray(value)) {
     treeNodeValues.set(id, { value, offset: 0 })
-    return { id, title: `${key} [${value.length}]`, keyLabel: key, kind: 'array', count: value.length, children: [] }
+    return {
+      id,
+      title: `${key} [${value.length}]`,
+      keyLabel: key,
+      kind: 'array',
+      count: value.length,
+      children: []
+    }
   }
   if (value !== null && typeof value === 'object') {
     const count = Object.keys(value).length
@@ -204,7 +228,9 @@ function buildChildren(source: TreeNodeSource): JsonTreeItem[] {
     }
     return value.map((item, index) => makeTreeItem(item, String(offset + index)))
   }
-  return Object.entries(value as Record<string, unknown>).map(([key, child]) => makeTreeItem(child, key))
+  return Object.entries(value as Record<string, unknown>).map(([key, child]) =>
+    makeTreeItem(child, key)
+  )
 }
 
 async function loadTreeChildren(rawItem: unknown) {
@@ -230,7 +256,9 @@ watch(
     }
     // İlk seviye hemen; gerisi açıldıkça.
     jsonTreeItems.value =
-      source !== null && typeof source === 'object' ? buildChildren({ value: source, offset: 0 }) : [makeTreeItem(source, '$')]
+      source !== null && typeof source === 'object'
+        ? buildChildren({ value: source, offset: 0 })
+        : [makeTreeItem(source, '$')]
   },
   { immediate: true }
 )
@@ -285,56 +313,101 @@ async function copyBody() {
             :color="response.testResults.every((r) => r.passed) ? 'success' : 'error'"
             variant="tonal"
           >
-            {{ response.testResults.filter((r) => r.passed).length }}/{{ response.testResults.length }}
+            {{ response.testResults.filter((r) => r.passed).length }}/{{
+              response.testResults.length
+            }}
           </v-chip>
         </v-tab>
       </v-tabs>
       <div class="d-flex align-center ga-3 flex-shrink-0 ml-2">
         <!-- Durum: hover kartında kısa açıklama -->
-        <v-menu open-on-hover :open-delay="150" location="bottom end" :close-on-content-click="false">
+        <v-menu
+          open-on-hover
+          :open-delay="150"
+          location="bottom end"
+          :close-on-content-click="false"
+        >
           <template #activator="{ props: hoverProps }">
-            <v-chip v-bind="hoverProps" :color="statusColor" variant="tonal" size="small" class="antiphon-mono font-weight-bold">
+            <v-chip
+              v-bind="hoverProps"
+              :color="statusColor"
+              variant="tonal"
+              size="small"
+              class="antiphon-mono font-weight-bold"
+            >
               {{ response.status }} {{ response.statusText }}
             </v-chip>
           </template>
           <v-card min-width="280" max-width="340" class="pa-3">
             <div class="d-flex align-center ga-2 mb-1">
               <v-icon icon="mdi-check-circle" size="16" :color="statusColor" />
-              <span class="text-subtitle-2 antiphon-mono">{{ response.status }} {{ response.statusText }}</span>
+              <span class="text-subtitle-2 antiphon-mono"
+                >{{ response.status }} {{ response.statusText }}</span
+              >
             </div>
             <p class="text-caption text-medium-emphasis mb-0">{{ statusHint }}</p>
           </v-card>
         </v-menu>
 
         <!-- Süre: hover kartında şelale dökümü -->
-        <v-menu open-on-hover :open-delay="150" location="bottom end" :close-on-content-click="false">
+        <v-menu
+          open-on-hover
+          :open-delay="150"
+          location="bottom end"
+          :close-on-content-click="false"
+        >
           <template #activator="{ props: hoverProps }">
-            <span v-bind="hoverProps" class="text-caption text-medium-emphasis antiphon-mono antiphon-meta-hover">
+            <span
+              v-bind="hoverProps"
+              class="text-caption text-medium-emphasis antiphon-mono antiphon-meta-hover"
+            >
               {{ fmt.ms(response.timing.total) }}
             </span>
           </template>
           <v-card min-width="340" class="pa-3">
             <div class="d-flex align-center justify-space-between mb-2">
               <span class="text-subtitle-2">{{ t('response.responseTime') }}</span>
-              <span class="text-caption antiphon-mono font-weight-bold">{{ fmt.msDecimal(response.timing.total) }}</span>
+              <span class="text-caption antiphon-mono font-weight-bold">{{
+                fmt.msDecimal(response.timing.total)
+              }}</span>
             </div>
-            <div v-for="phase in timingPhases" :key="phase.label" class="d-flex align-center ga-2 py-1">
-              <span class="text-caption text-medium-emphasis antiphon-timing-label">{{ phase.label }}</span>
+            <div
+              v-for="phase in timingPhases"
+              :key="phase.label"
+              class="d-flex align-center ga-2 py-1"
+            >
+              <span class="text-caption text-medium-emphasis antiphon-timing-label">{{
+                phase.label
+              }}</span>
               <div class="antiphon-timing-track flex-grow-1">
                 <div
                   class="antiphon-timing-bar"
-                  :style="{ marginLeft: phase.start + '%', width: phase.width + '%', background: `rgb(var(--v-theme-${phase.color}))` }"
+                  :style="{
+                    marginLeft: `${phase.start}%`,
+                    width: `${phase.width}%`,
+                    background: `rgb(var(--v-theme-${phase.color}))`
+                  }"
                 />
               </div>
-              <span class="text-caption antiphon-mono antiphon-timing-value">{{ fmt.msDecimal(phase.value) }}</span>
+              <span class="text-caption antiphon-mono antiphon-timing-value">{{
+                fmt.msDecimal(phase.value)
+              }}</span>
             </div>
           </v-card>
         </v-menu>
 
         <!-- Boyut: hover kartında başlık/gövde dökümü -->
-        <v-menu open-on-hover :open-delay="150" location="bottom end" :close-on-content-click="false">
+        <v-menu
+          open-on-hover
+          :open-delay="150"
+          location="bottom end"
+          :close-on-content-click="false"
+        >
           <template #activator="{ props: hoverProps }">
-            <span v-bind="hoverProps" class="text-caption text-medium-emphasis antiphon-mono antiphon-meta-hover">
+            <span
+              v-bind="hoverProps"
+              class="text-caption text-medium-emphasis antiphon-mono antiphon-meta-hover"
+            >
               {{ fmt.kb(response.sizeBytes) }}
             </span>
           </template>
@@ -344,7 +417,9 @@ async function copyBody() {
               <v-icon icon="mdi-arrow-down-circle" size="16" color="info" />
               <span class="text-subtitle-2">{{ t('response.responseSize') }}</span>
               <v-spacer />
-              <span class="text-caption antiphon-mono font-weight-bold">{{ fmt.kb(headersSizeBytes + response.sizeBytes) }}</span>
+              <span class="text-caption antiphon-mono font-weight-bold">{{
+                fmt.kb(headersSizeBytes + response.sizeBytes)
+              }}</span>
             </div>
             <div class="d-flex justify-space-between text-caption py-1 pl-6">
               <span class="text-medium-emphasis">{{ t('response.sizeHeaders') }}</span>
@@ -379,13 +454,28 @@ async function copyBody() {
         </v-menu>
 
         <!-- Ağ: hover kartında bağlantı/TLS bilgisi -->
-        <v-menu v-if="networkRows.length" open-on-hover :open-delay="150" location="bottom end" :close-on-content-click="false">
+        <v-menu
+          v-if="networkRows.length"
+          open-on-hover
+          :open-delay="150"
+          location="bottom end"
+          :close-on-content-click="false"
+        >
           <template #activator="{ props: hoverProps }">
-            <v-icon v-bind="hoverProps" icon="mdi-web" size="16" class="text-medium-emphasis antiphon-meta-hover" />
+            <v-icon
+              v-bind="hoverProps"
+              icon="mdi-web"
+              size="16"
+              class="text-medium-emphasis antiphon-meta-hover"
+            />
           </template>
           <v-card min-width="320" class="pa-3">
             <div class="text-subtitle-2 mb-1">{{ t('response.network') }}</div>
-            <div v-for="row in networkRows" :key="row.label" class="d-flex justify-space-between ga-4 text-caption py-1">
+            <div
+              v-for="row in networkRows"
+              :key="row.label"
+              class="d-flex justify-space-between ga-4 text-caption py-1"
+            >
               <span class="text-medium-emphasis flex-shrink-0">{{ row.label }}</span>
               <span class="antiphon-mono text-truncate">{{ row.value }}</span>
             </div>
@@ -399,12 +489,19 @@ async function copyBody() {
       <span class="ml-3 text-body-2 text-medium-emphasis">{{ t('response.waiting') }}</span>
     </div>
 
-    <div v-else-if="error" class="d-flex flex-column align-center justify-center flex-grow-1 text-error pa-6 text-center">
+    <div
+      v-else-if="error"
+      class="d-flex flex-column align-center justify-center flex-grow-1 text-error pa-6 text-center"
+    >
       <v-icon icon="mdi-alert-circle-outline" size="40" class="mb-2" />
       <span class="text-body-2">{{ error }}</span>
     </div>
 
-    <AppEmptyState v-else-if="!response" icon="mdi-tray-arrow-down" :title="t('response.placeholder')" />
+    <AppEmptyState
+      v-else-if="!response"
+      icon="mdi-tray-arrow-down"
+      :title="t('response.placeholder')"
+    />
 
     <!-- v-window yerine v-if: sekme geçişlerinde eski içeriğin ekranda kalmasını
          (üst üste binme) önler; ağır editör/ağaç DOM'da da tutulmaz. -->
@@ -412,11 +509,23 @@ async function copyBody() {
       <!-- Gövde: araç çubuğu + metin (CodeMirror) veya ağaç görünümü -->
       <div v-if="activeTab === 'body'" class="h-100 d-flex flex-column">
         <div class="d-flex align-center ga-1 px-3 py-1 flex-shrink-0">
-          <v-btn-toggle v-if="parsedJson !== undefined" v-model="viewMode" density="compact" mandatory color="primary">
-            <v-btn value="text" size="x-small" class="text-none">{{ t('response.viewText') }}</v-btn>
-            <v-btn value="tree" size="x-small" class="text-none">{{ t('response.viewTree') }}</v-btn>
+          <v-btn-toggle
+            v-if="parsedJson !== undefined"
+            v-model="viewMode"
+            density="compact"
+            mandatory
+            color="primary"
+          >
+            <v-btn value="text" size="x-small" class="text-none">{{
+              t('response.viewText')
+            }}</v-btn>
+            <v-btn value="tree" size="x-small" class="text-none">{{
+              t('response.viewTree')
+            }}</v-btn>
           </v-btn-toggle>
-          <v-chip size="x-small" variant="tonal" class="antiphon-mono ml-1" lang="en">{{ bodyLanguage.toUpperCase() }}</v-chip>
+          <v-chip size="x-small" variant="tonal" class="antiphon-mono ml-1" lang="en">{{
+            bodyLanguage.toUpperCase()
+          }}</v-chip>
           <v-spacer />
           <v-btn
             v-if="parsedJson !== undefined"
@@ -453,7 +562,10 @@ async function copyBody() {
         </div>
 
         <!-- JSONPath filtre çubuğu (Postman: "Filter using JSONPath") -->
-        <div v-if="filterBarOpen && parsedJson !== undefined" class="d-flex align-center ga-2 px-3 pb-1 flex-shrink-0">
+        <div
+          v-if="filterBarOpen && parsedJson !== undefined"
+          class="d-flex align-center ga-2 px-3 pb-1 flex-shrink-0"
+        >
           <v-text-field
             v-model="filterPath"
             :placeholder="t('response.filterPlaceholder')"
@@ -464,15 +576,26 @@ async function copyBody() {
             rounded="lg"
             class="antiphon-mono"
           />
-          <v-chip v-if="filterHasNoMatch" size="x-small" color="warning" variant="tonal" class="flex-shrink-0">
+          <v-chip
+            v-if="filterHasNoMatch"
+            size="x-small"
+            color="warning"
+            variant="tonal"
+            class="flex-shrink-0"
+          >
             {{ t('response.noMatch') }}
           </v-chip>
         </div>
 
-        <p v-if="isBinary" class="text-caption text-medium-emphasis pa-4">{{ t('response.binaryBody') }}</p>
+        <p v-if="isBinary" class="text-caption text-medium-emphasis pa-4">
+          {{ t('response.binaryBody') }}
+        </p>
 
         <!-- Ağaç görünümü (yalnızca geçerli JSON) -->
-        <div v-else-if="viewMode === 'tree' && parsedJson !== undefined" class="flex-grow-1 overflow-y-auto px-2">
+        <div
+          v-else-if="viewMode === 'tree' && parsedJson !== undefined"
+          class="flex-grow-1 overflow-y-auto px-2"
+        >
           <AppLtr>
             <v-treeview
               :items="jsonTreeItems"
@@ -486,15 +609,23 @@ async function copyBody() {
             >
               <!-- Anahtar / değer / sayaç parçaları tema token'larıyla renklendirilir -->
               <template #title="{ item }">
-                <span :class="item.kind === 'slice' ? 'antiphon-json-slice' : 'antiphon-json-key'">{{ item.keyLabel }}</span>
+                <span
+                  :class="item.kind === 'slice' ? 'antiphon-json-slice' : 'antiphon-json-key'"
+                  >{{ item.keyLabel }}</span
+                >
                 <template v-if="item.kind === 'leaf'">
                   <span class="antiphon-json-punct"> : </span>
-                  <span :class="`antiphon-json-value antiphon-json-value--${item.valueKind}`">{{ item.valueText }}</span>
+                  <span :class="`antiphon-json-value antiphon-json-value--${item.valueKind}`">{{
+                    item.valueText
+                  }}</span>
                 </template>
                 <template v-else-if="item.kind === 'object' || item.kind === 'array'">
-                  <span class="antiphon-json-punct"> : {{ item.kind === 'array' ? '[' : '{' }} </span>
+                  <span class="antiphon-json-punct">
+                    : {{ item.kind === 'array' ? '[' : '{' }}
+                  </span>
                   <span class="antiphon-json-count">
-                    {{ item.count }} {{ item.kind === 'array' ? t('response.items') : t('response.props') }}
+                    {{ item.count }}
+                    {{ item.kind === 'array' ? t('response.items') : t('response.props') }}
                   </span>
                   <span class="antiphon-json-punct"> {{ item.kind === 'array' ? ']' : '}' }}</span>
                 </template>
@@ -505,7 +636,14 @@ async function copyBody() {
 
         <!-- Metin görünümü: vurgulamalı, salt-okunur editör -->
         <div v-else class="flex-grow-1 overflow-hidden">
-          <CodeMirrorEditor ref="editorRef" :model-value="displayBody" :language="bodyLanguage" :wrap="wrapLines" read-only class="h-100" />
+          <CodeMirrorEditor
+            ref="editorRef"
+            :model-value="displayBody"
+            :language="bodyLanguage"
+            :wrap="wrapLines"
+            read-only
+            class="h-100"
+          />
         </div>
       </div>
 
@@ -521,7 +659,9 @@ async function copyBody() {
             </thead>
             <tbody>
               <tr v-for="(value, key) in response.headers" :key="key">
-                <td class="antiphon-mono text-medium-emphasis antiphon-response-table__key">{{ key }}</td>
+                <td class="antiphon-mono text-medium-emphasis antiphon-response-table__key">
+                  {{ key }}
+                </td>
                 <td class="antiphon-mono">{{ value }}</td>
               </tr>
             </tbody>
@@ -529,7 +669,10 @@ async function copyBody() {
         </AppLtr>
       </div>
       <!-- Çerezler: yoksa boş durum, varsa tablo -->
-      <div v-else-if="activeTab === 'cookies'" class="pa-3 h-100 overflow-y-auto d-flex flex-column">
+      <div
+        v-else-if="activeTab === 'cookies'"
+        class="pa-3 h-100 overflow-y-auto d-flex flex-column"
+      >
         <AppEmptyState
           v-if="responseCookies.length === 0"
           icon="mdi-cookie-off-outline"
@@ -546,7 +689,9 @@ async function copyBody() {
           </thead>
           <tbody>
             <tr v-for="cookie in responseCookies" :key="cookie.name">
-              <td class="antiphon-mono text-medium-emphasis antiphon-response-table__key">{{ cookie.name }}</td>
+              <td class="antiphon-mono text-medium-emphasis antiphon-response-table__key">
+                {{ cookie.name }}
+              </td>
               <td class="antiphon-mono">{{ cookie.value }}</td>
               <td class="antiphon-mono text-medium-emphasis">{{ cookie.attributes }}</td>
             </tr>
@@ -562,11 +707,21 @@ async function copyBody() {
           :title="t('response.noTests')"
           :text="t('response.noTestsHint')"
         />
-        <div v-for="(test, i) in response.testResults" :key="i" class="d-flex align-start ga-2 py-1">
-          <v-icon :icon="test.passed ? 'mdi-check-circle' : 'mdi-close-circle'" :color="test.passed ? 'success' : 'error'" size="18" />
+        <div
+          v-for="(test, i) in response.testResults"
+          :key="i"
+          class="d-flex align-start ga-2 py-1"
+        >
+          <v-icon
+            :icon="test.passed ? 'mdi-check-circle' : 'mdi-close-circle'"
+            :color="test.passed ? 'success' : 'error'"
+            size="18"
+          />
           <div>
             <div class="text-body-2">{{ test.name }}</div>
-            <div v-if="!test.passed && test.error" class="text-caption text-error antiphon-mono">{{ test.error }}</div>
+            <div v-if="!test.passed && test.error" class="text-caption text-error antiphon-mono">
+              {{ test.error }}
+            </div>
           </div>
         </div>
       </div>

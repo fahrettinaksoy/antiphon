@@ -1,4 +1,5 @@
-import { describe, it, expect } from 'vitest'
+import { Buffer } from 'node:buffer'
+import { describe, expect, it } from 'vitest'
 import { resolveAuth } from './auth'
 
 describe('resolveAuth', () => {
@@ -9,7 +10,9 @@ describe('resolveAuth', () => {
 
   it('builds a Basic auth header', () => {
     const result = resolveAuth({ type: 'basic', username: 'admin', password: 'secret' })
-    expect(result.headers.Authorization).toBe(`Basic ${Buffer.from('admin:secret').toString('base64')}`)
+    expect(result.headers.Authorization).toBe(
+      `Basic ${Buffer.from('admin:secret').toString('base64')}`
+    )
   })
 
   it('builds a Bearer auth header', () => {

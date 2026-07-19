@@ -7,7 +7,7 @@
 //   footer : opsiyonel bölüm alt eylem/özet alanı (#footer)
 import { useI18n } from '@/composables/i18n'
 
-const props = defineProps<{
+defineProps<{
   title: string
   /** Başlık yanında opsiyonel sayaç rozeti. */
   count?: number
@@ -38,7 +38,12 @@ function toggleFilter(value: string) {
   <section class="antiphon-section">
     <header class="antiphon-section__header">
       <span class="antiphon-section__title text-truncate">{{ title }}</span>
-      <v-chip v-if="count !== undefined" size="x-small" variant="tonal" class="antiphon-section__count">
+      <v-chip
+        v-if="count !== undefined"
+        size="x-small"
+        variant="tonal"
+        class="antiphon-section__count"
+      >
         {{ count }}
       </v-chip>
       <v-spacer />
@@ -76,7 +81,11 @@ function toggleFilter(value: string) {
           </v-btn>
         </template>
         <v-list density="compact" min-width="160">
-          <v-list-item v-for="opt in filterOptions" :key="opt.value" @click="toggleFilter(opt.value)">
+          <v-list-item
+            v-for="opt in filterOptions"
+            :key="opt.value"
+            @click="toggleFilter(opt.value)"
+          >
             <template #prepend>
               <v-checkbox-btn
                 :model-value="filter.includes(opt.value)"

@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { useTheme } from 'vuetify'
+import { usePreferredContrast, usePreferredDark } from '@vueuse/core'
 import { computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { usePreferredDark, usePreferredContrast } from '@vueuse/core'
+import { useTheme } from 'vuetify'
 import { useI18n } from '@/composables/i18n'
-import { setAppLocale } from './plugins/i18n'
-import { useUiStore } from './stores/ui'
-import { useWorkspacesStore } from './stores/workspaces'
-import { useTabsStore } from './stores/tabs'
-import { useHistoryStore } from './stores/history'
-import CommandPalette from './components/palette/CommandPalette.vue'
-import CreateWorkspaceDialog from './components/workspace/CreateWorkspaceDialog.vue'
-import SaveRequestDrawer from './components/workspace/SaveRequestDrawer.vue'
+import { ipc } from '@/lib/ipc'
+import GitPanel from './components/layout/GitPanel.vue'
+import HistoryPanel from './components/layout/HistoryPanel.vue'
+import MockServerDialog from './components/layout/MockServerDialog.vue'
 import TopAppBar from './components/layout/TopAppBar.vue'
+import CommandPalette from './components/palette/CommandPalette.vue'
 import ActivityBar from './components/sidebar/ActivityBar.vue'
 import SidebarPanel from './components/sidebar/SidebarPanel.vue'
-import HistoryPanel from './components/layout/HistoryPanel.vue'
-import GitPanel from './components/layout/GitPanel.vue'
-import MockServerDialog from './components/layout/MockServerDialog.vue'
+import CreateWorkspaceDialog from './components/workspace/CreateWorkspaceDialog.vue'
+import SaveRequestDrawer from './components/workspace/SaveRequestDrawer.vue'
+import { setAppLocale } from './plugins/i18n'
+import { useHistoryStore } from './stores/history'
+import { useTabsStore } from './stores/tabs'
+import { useUiStore } from './stores/ui'
+import { useWorkspacesStore } from './stores/workspaces'
 
 const theme = useTheme()
 const router = useRouter()
@@ -71,7 +71,9 @@ watch(
 const prefersDark = usePreferredDark()
 watch(prefersDark, (v) => uiStore.setSystemPrefersDark(v), { immediate: true })
 const prefersContrast = usePreferredContrast()
-watch(prefersContrast, (v) => uiStore.setSystemPrefersMoreContrast(v === 'more'), { immediate: true })
+watch(prefersContrast, (v) => uiStore.setSystemPrefersMoreContrast(v === 'more'), {
+  immediate: true
+})
 
 // Efektif tema (themeName getter'ı; tercih + OS'e göre çözülür) → Vuetify'e uygula.
 let themeTransitionTimer: ReturnType<typeof setTimeout> | undefined
@@ -83,7 +85,10 @@ watch(
       const root = document.documentElement
       root.classList.add('antiphon-theme-transition')
       clearTimeout(themeTransitionTimer)
-      themeTransitionTimer = setTimeout(() => root.classList.remove('antiphon-theme-transition'), 240)
+      themeTransitionTimer = setTimeout(
+        () => root.classList.remove('antiphon-theme-transition'),
+        240
+      )
     }
     theme.change(name)
   },
@@ -105,7 +110,13 @@ onMounted(async () => {
     <TopAppBar />
     <!-- MD3: kenar çubuğu border ile değil tonal yüzey (surface-light) ile ayrılır.
          v-if: hamburger ile gizlenebilir; Çalışma Alanları sayfasında hiç yer almaz. -->
-    <v-navigation-drawer v-if="drawerVisible" permanent width="348" color="surface-light" class="antiphon-sidebar-drawer">
+    <v-navigation-drawer
+      v-if="drawerVisible"
+      permanent
+      width="348"
+      color="surface-light"
+      class="antiphon-sidebar-drawer"
+    >
       <div class="d-flex h-100">
         <ActivityBar />
         <SidebarPanel @replay="replayHistoryEntry" />
@@ -130,4 +141,3 @@ onMounted(async () => {
     <CreateWorkspaceDialog v-model="uiStore.createWorkspaceDialogOpen" />
   </v-app>
 </template>
-

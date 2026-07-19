@@ -1,0 +1,6 @@
+# cargo-audit yapılandırması — `cargo audit` bu dosyayı OTOMATİK okur.
+#
+# Buradaki her ignore, güvenlik duruşunun BİLİNÇLİ ve BELGELİ bir istisnasıdır.
+# Yeni bir ignore eklerken mutlaka gerekçe yaz.
+[advisories]
+ignore = []

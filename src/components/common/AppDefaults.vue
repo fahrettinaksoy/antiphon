@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import type { DefaultsPresetName } from '../../plugins/vuetify-defaults'
 // Merkezi Vuetify default preset'lerini bir alt-ağaca uygulayan ince sarmalayıcı.
 // <v-defaults-provider>'ı doğrudan kullanmak yerine adlandırılmış preset'ler (DRY) sağlar.
 // https://vuetifyjs.com/en/components/defaults-providers/
-import { defaultsPresets, type DefaultsPresetName } from '../../plugins/vuetify-defaults'
+import { defaultsPresets } from '../../plugins/vuetify-defaults'
 
 withDefaults(
   defineProps<{

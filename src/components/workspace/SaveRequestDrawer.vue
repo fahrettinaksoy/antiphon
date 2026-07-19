@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import type { WorkspaceNode } from '@shared/ipc-contract'
 // "İsteği Kaydet" çekmecesi — boşta (dosyasız) bir sekme kaydedilirken açılır:
 // ad, "Kaydedilecek yer" breadcrumb'ı, aranabilir klasör ağacı (kapalı başlar),
 // Yeni Klasör ve Kaydet/İptal. (Postman'in Save Request diyaloğunun karşılığı.)
 import { computed, ref, watch } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import { useUiStore } from '../../stores/ui'
 import { useTabsStore } from '../../stores/tabs'
+import { useUiStore } from '../../stores/ui'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useWorkspacesStore } from '../../stores/workspaces'
-import SidebarSection from '../sidebar/SidebarSection.vue'
 import NewItemDialog from '../sidebar/NewItemDialog.vue'
-import type { WorkspaceNode } from '@shared/ipc-contract'
+import SidebarSection from '../sidebar/SidebarSection.vue'
 
 const { t } = useI18n()
 const uiStore = useUiStore()
@@ -25,7 +25,9 @@ const open = computed({
   }
 })
 
-const tab = computed(() => tabsStore.tabs.find((item) => item.id === uiStore.saveRequestTabId) ?? null)
+const tab = computed(
+  () => tabsStore.tabs.find((item) => item.id === uiStore.saveRequestTabId) ?? null
+)
 
 const requestName = ref('')
 const targetPath = ref<string | null>(null)
@@ -47,7 +49,9 @@ interface FolderItem {
 }
 function toFolderItem(node: WorkspaceNode): FolderItem | null {
   if (node.type !== 'folder') return null
-  const children = (node.children ?? []).map(toFolderItem).filter((c): c is FolderItem => c !== null)
+  const children = (node.children ?? [])
+    .map(toFolderItem)
+    .filter((c): c is FolderItem => c !== null)
   return { id: node.path, title: node.name, children: children.length > 0 ? children : undefined }
 }
 const folderItems = computed(() =>
@@ -57,19 +61,25 @@ const folderItems = computed(() =>
 // Arama: başlığı eşleşen klasörler (eşleşen alt dallar korunur).
 function filterFolder(item: FolderItem, q: string): FolderItem | null {
   const selfMatch = item.title.toLowerCase().includes(q)
-  const children = (item.children ?? []).map((c) => filterFolder(c, q)).filter((c): c is FolderItem => c !== null)
-  if (selfMatch || children.length > 0) return { ...item, children: children.length > 0 ? children : undefined }
+  const children = (item.children ?? [])
+    .map((c) => filterFolder(c, q))
+    .filter((c): c is FolderItem => c !== null)
+  if (selfMatch || children.length > 0)
+    return { ...item, children: children.length > 0 ? children : undefined }
   return null
 }
 const filteredFolders = computed(() => {
   const q = search.value.trim().toLowerCase()
   if (!q) return folderItems.value
-  return folderItems.value.map((item) => filterFolder(item, q)).filter((c): c is FolderItem => c !== null)
+  return folderItems.value
+    .map((item) => filterFolder(item, q))
+    .filter((c): c is FolderItem => c !== null)
 })
 
 // v-treeview seçim modeli (tek klasör)
 const activated = computed({
-  get: () => (targetPath.value && targetPath.value !== workspaceStore.rootPath ? [targetPath.value] : []),
+  get: () =>
+    targetPath.value && targetPath.value !== workspaceStore.rootPath ? [targetPath.value] : [],
   set: (values: unknown[]) => {
     targetPath.value = (values[0] as string | undefined) ?? workspaceStore.rootPath
   }
@@ -82,7 +92,9 @@ const breadcrumbs = computed(() => {
     { title: workspacesStore.active?.name ?? 'Workspace', path: root ?? '' }
   ]
   if (!root || !targetPath.value || targetPath.value === root) return crumbs
-  const rel = targetPath.value.startsWith(root) ? targetPath.value.slice(root.length) : targetPath.value
+  const rel = targetPath.value.startsWith(root)
+    ? targetPath.value.slice(root.length)
+    : targetPath.value
   let acc = root
   for (const segment of rel.split(/[\\/]/).filter(Boolean)) {
     acc = `${acc}/${segment}`
@@ -118,13 +130,25 @@ async function save() {
   <v-navigation-drawer v-model="open" location="right" temporary width="480">
     <SidebarSection :title="t('saveRequest.title')">
       <template #actions>
-        <v-btn icon="mdi-close" size="x-small" variant="text" :title="t('actions.cancel')" @click="open = false" />
+        <v-btn
+          icon="mdi-close"
+          size="x-small"
+          variant="text"
+          :title="t('actions.cancel')"
+          @click="open = false"
+        />
       </template>
 
       <div class="flex-grow-1 overflow-y-auto px-4 pt-2 d-flex flex-column">
         <!-- İstek adı -->
         <div class="text-caption text-medium-emphasis mb-1">{{ t('saveRequest.nameLabel') }}</div>
-        <v-text-field v-model="requestName" density="comfortable" hide-details autofocus class="mb-4 flex-grow-0" />
+        <v-text-field
+          v-model="requestName"
+          density="comfortable"
+          hide-details
+          autofocus
+          class="mb-4 flex-grow-0"
+        />
 
         <!-- Kaydedilecek yer: breadcrumb -->
         <div class="d-flex align-center flex-wrap ga-1 mb-2">
@@ -178,18 +202,36 @@ async function save() {
       <!-- Standart footer: Yeni Klasör solda, Kaydet/İptal sağda -->
       <template #footer>
         <div class="d-flex align-center ga-2">
-          <v-btn size="small" variant="text" prepend-icon="mdi-folder-plus-outline" class="text-none" @click="newFolderOpen = true">
+          <v-btn
+            size="small"
+            variant="text"
+            prepend-icon="mdi-folder-plus-outline"
+            class="text-none"
+            @click="newFolderOpen = true"
+          >
             {{ t('saveRequest.newFolder') }}
           </v-btn>
           <v-spacer />
-          <v-btn variant="text" class="text-none" @click="open = false">{{ t('actions.cancel') }}</v-btn>
-          <v-btn color="primary" variant="flat" class="text-none" :disabled="!canSave" @click="save">
+          <v-btn variant="text" class="text-none" @click="open = false">{{
+            t('actions.cancel')
+          }}</v-btn>
+          <v-btn
+            color="primary"
+            variant="flat"
+            class="text-none"
+            :disabled="!canSave"
+            @click="save"
+          >
             {{ t('actions.save') }}
           </v-btn>
         </div>
       </template>
 
-      <NewItemDialog v-model="newFolderOpen" :title="t('saveRequest.newFolder')" @confirm="handleNewFolder" />
+      <NewItemDialog
+        v-model="newFolderOpen"
+        :title="t('saveRequest.newFolder')"
+        @confirm="handleNewFolder"
+      />
     </SidebarSection>
   </v-navigation-drawer>
 </template>

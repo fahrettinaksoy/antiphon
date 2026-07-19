@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
 import { createPinia, setActivePinia } from 'pinia'
-import { useTabsStore, tabToRequestFile } from './tabs'
+import { beforeEach, describe, expect, it } from 'vitest'
+import { tabToRequestFile, useTabsStore } from './tabs'
 
 describe('tabs store', () => {
   beforeEach(() => {

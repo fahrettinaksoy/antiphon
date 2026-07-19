@@ -1,14 +1,23 @@
 <script setup lang="ts">
 // GLOBAL app bar — çalışma alanına özel eylemler WorkspaceToolbar'da yaşar.
-import { computed } from 'vue'
-import { useI18n } from '@/composables/i18n'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from '@/composables/i18n'
 import { useUiStore } from '../../stores/ui'
 import WorkspaceMenu from '../workspace/WorkspaceMenu.vue'
 
 const { t } = useI18n()
 const router = useRouter()
 const uiStore = useUiStore()
+
+// Tüm bar boş alanını pencere sürüklenebilir yap: Vuetify'ın içerik konteynerine
+// `data-tauri-drag-region` eklenir (butonlar kendi tıklamalarını yakalar → etkilenmez).
+const appBar = ref<{ $el?: HTMLElement }>()
+onMounted(() => {
+  appBar.value?.$el
+    ?.querySelector('.v-toolbar__content')
+    ?.setAttribute('data-tauri-drag-region', '')
+})
 
 // Hamburger yalnızca sol kenar çubuğunun var olduğu rotada (çalışma alanı) görünür.
 const inWorkspace = computed(() => router.currentRoute.value.path === '/')
@@ -28,10 +37,11 @@ function goHome() {
   <!-- MD3 top app bar: 64px yükseklik; başta kenar çubuğu aç/kapa (hamburger) gezinme ikonu.
        macOS'ta trafik ışıkları bu barın sol boşluğuna oturur (ayrı başlık şeridi yok). -->
   <v-app-bar
+    ref="appBar"
     :elevation="0"
     height="64"
     class="px-2 antiphon-app-bar"
-    :class="{ 'antiphon-app-bar--inset': uiStore.needsTrafficLightInset }"
+    data-tauri-drag-region
   >
     <template #prepend>
       <v-btn
@@ -42,9 +52,20 @@ function goHome() {
         :title="t('header.toggleSidebar')"
         @click="uiStore.toggleSidebar"
       />
-      <v-icon icon="mdi-vector-triangle" size="22" class="mx-2" color="primary" />
+      <v-icon
+        icon="mdi-vector-triangle"
+        size="22"
+        class="mx-2"
+        color="primary"
+        data-tauri-drag-region
+      />
       <!-- lang="en": marka adı büyük harfe çevrilirken Türkçe i→İ kuralı uygulanmasın (ANTIPHON, ANTİPHON değil). -->
-      <span lang="en" class="text-subtitle-1 font-weight-bold mr-4 text-uppercase antiphon-brand">{{ t('app.name') }}</span>
+      <span
+        lang="en"
+        class="text-subtitle-1 font-weight-bold mr-4 text-uppercase antiphon-brand"
+        data-tauri-drag-region
+        >{{ t('app.name') }}</span
+      >
     </template>
 
     <!-- Sol gezinme bağlantıları (Postman: Home / Workspaces / API Network / Explore) -->
@@ -55,12 +76,17 @@ function goHome() {
 
       <WorkspaceMenu />
 
-      <v-btn variant="text" size="small" class="text-none antiphon-nav__link" @click="uiStore.openCommandPalette">
+      <v-btn
+        variant="text"
+        size="small"
+        class="text-none antiphon-nav__link"
+        @click="uiStore.openCommandPalette"
+      >
         {{ t('header.explore') }}
       </v-btn>
     </nav>
 
-    <v-spacer />
+    <v-spacer data-tauri-drag-region />
 
     <!-- Ortada belirgin arama kutusu (komut paletini açar) -->
     <button type="button" class="antiphon-search" @click="uiStore.openCommandPalette">
@@ -69,7 +95,7 @@ function goHome() {
       <kbd class="antiphon-kbd">⌘K</kbd>
     </button>
 
-    <v-spacer />
+    <v-spacer data-tauri-drag-region />
 
     <!-- Çalışma alanına özel eylemler (İçe Aktar, ortam, Git, Geçmiş) WorkspaceToolbar'da yaşar. -->
     <div class="antiphon-icon-group ml-1">
@@ -81,26 +107,26 @@ function goHome() {
         title="Tema"
         @click="uiStore.toggleTheme"
       />
-      <v-btn variant="text" density="comfortable" size="small" title="Dil" @click="toggleLocale">{{ uiStore.locale.toUpperCase() }}</v-btn>
-      <v-btn icon="mdi-cog-outline" variant="text" density="comfortable" size="small" :title="t('settings.title')" @click="router.push('/settings')" />
+      <v-btn variant="text" density="comfortable" size="small" title="Dil" @click="toggleLocale">{{
+        uiStore.locale.toUpperCase()
+      }}</v-btn>
+      <v-btn
+        icon="mdi-cog-outline"
+        variant="text"
+        density="comfortable"
+        size="small"
+        :title="t('settings.title')"
+        @click="router.push('/settings')"
+      />
     </div>
   </v-app-bar>
-
 </template>
 
 <style scoped>
-/* Pencereyi bu bar üzerinden sürüklenebilir yap; tıklanabilir öğeler no-drag olarak işaretlenir. */
-.antiphon-app-bar {
-  -webkit-app-region: drag;
-}
-.antiphon-app-bar :deep(button),
-.antiphon-app-bar :deep(input),
-.antiphon-app-bar :deep(a) {
-  -webkit-app-region: no-drag;
-}
-/* macOS trafik ışıklarına yer aç (hiddenInset + trafficLightPosition ile bar içinde dururlar). */
-.antiphon-app-bar--inset :deep(.v-toolbar__content) {
-  padding-left: 76px;
+/* Pencere sürükleme: boş bölgeler `data-tauri-drag-region` ile sürüklenebilir; butonlar/arama
+   kendi tıklamalarını yakalar (attribute taşımaz) → sürükleme onları etkilemez. */
+.antiphon-app-bar :deep([data-tauri-drag-region]) {
+  cursor: default;
 }
 .antiphon-brand {
   letter-spacing: 0.04em;
@@ -120,7 +146,6 @@ function goHome() {
 
 /* Ortadaki arama kutusu — MD3 search bar: çerçevesiz, tam yuvarlak, dolgulu tonal yüzey. */
 .antiphon-search {
-  -webkit-app-region: no-drag;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -154,9 +179,6 @@ function goHome() {
   padding: 2px;
   border-radius: 999px;
   background: rgba(var(--v-theme-on-surface), 0.06);
-}
-.antiphon-icon-group :deep(.v-btn) {
-  -webkit-app-region: no-drag;
 }
 .antiphon-kbd {
   font-size: 10px;

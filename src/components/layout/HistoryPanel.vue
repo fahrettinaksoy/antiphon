@@ -1,16 +1,16 @@
 <script setup lang="ts">
+import type { HistoryEntry } from '../../stores/history'
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import { useHistoryStore, type HistoryEntry } from '../../stores/history'
 import { useFormat } from '../../composables/useFormat'
+import { useHistoryStore } from '../../stores/history'
 import AppEmptyState from '../common/AppEmptyState.vue'
 import SidebarSection from '../sidebar/SidebarSection.vue'
 
+const emit = defineEmits<{ replay: [string] }>()
 const { t } = useI18n()
 const fmt = useFormat()
 const historyStore = useHistoryStore()
-const emit = defineEmits<{ replay: [string] }>()
-
 const statusColor = (status: number | null) => {
   if (status === null) return 'error'
   if (status >= 500) return 'error'
@@ -22,17 +22,20 @@ const statusColor = (status: number | null) => {
 // Standart bölüm araması + HTTP method filtresi
 const search = ref('')
 const methodFilter = ref<string[]>([])
-const methodFilterOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map((m) => ({
-  title: m,
-  value: m
-}))
+const methodFilterOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map(
+  (m) => ({
+    title: m,
+    value: m
+  })
+)
 
 const filteredEntries = computed(() => {
   const q = search.value.trim().toLowerCase()
   const methods = methodFilter.value
   return historyStore.entries.filter((entry) => {
     if (methods.length > 0 && !methods.includes(entry.method.toUpperCase())) return false
-    if (q && !entry.url.toLowerCase().includes(q) && !entry.requestName.toLowerCase().includes(q)) return false
+    if (q && !entry.url.toLowerCase().includes(q) && !entry.requestName.toLowerCase().includes(q))
+      return false
     return true
   })
 })
@@ -47,7 +50,11 @@ const groupedEntries = computed(() => {
   for (const entry of filteredEntries.value) {
     const entryDay = startOfDay(entry.sentAt)
     const label =
-      entryDay === todayStart ? t('sidebar.today') : entryDay === todayStart - dayMs ? t('sidebar.yesterday') : fmt.date(entry.sentAt)
+      entryDay === todayStart
+        ? t('sidebar.today')
+        : entryDay === todayStart - dayMs
+          ? t('sidebar.yesterday')
+          : fmt.date(entry.sentAt)
     const last = groups[groups.length - 1]
     if (last && last.label === label) last.entries.push(entry)
     else groups.push({ label, entries: [entry] })
@@ -58,13 +65,13 @@ const groupedEntries = computed(() => {
 
 <template>
   <SidebarSection
+    v-model:search="search"
+    v-model:filter="methodFilter"
     :title="t('sidebar.history')"
     :count="historyStore.entries.length || undefined"
     searchable
     :search-placeholder="t('sidebar.searchHistory')"
     :filter-options="methodFilterOptions"
-    v-model:search="search"
-    v-model:filter="methodFilter"
   >
     <AppEmptyState
       v-if="historyStore.entries.length === 0"
@@ -74,7 +81,12 @@ const groupedEntries = computed(() => {
       :text="t('empty.noHistoryHint')"
     />
 
-    <AppEmptyState v-else-if="filteredEntries.length === 0" size="compact" icon="mdi-magnify" :title="t('sidebar.noMatches')" />
+    <AppEmptyState
+      v-else-if="filteredEntries.length === 0"
+      size="compact"
+      icon="mdi-magnify"
+      :title="t('sidebar.noMatches')"
+    />
 
     <div v-else class="flex-grow-1 overflow-y-auto pb-2">
       <template v-for="group in groupedEntries" :key="group.label">
@@ -99,7 +111,9 @@ const groupedEntries = computed(() => {
           </v-chip>
           <div class="flex-grow-1" style="min-width: 0">
             <div class="text-body-2 d-flex ga-2 align-center">
-              <span class="antiphon-mono font-weight-bold text-caption flex-shrink-0">{{ entry.method }}</span>
+              <span class="antiphon-mono font-weight-bold text-caption flex-shrink-0">{{
+                entry.method
+              }}</span>
               <span class="text-truncate">{{ entry.url }}</span>
             </div>
             <div class="text-caption text-medium-emphasis antiphon-mono">
@@ -120,9 +134,17 @@ const groupedEntries = computed(() => {
 
     <template v-if="historyStore.entries.length > 0" #footer>
       <div class="d-flex align-center ga-2">
-        <span class="text-caption text-medium-emphasis">{{ t('sidebar.entryCount', { n: historyStore.entries.length }) }}</span>
+        <span class="text-caption text-medium-emphasis">{{
+          t('sidebar.entryCount', { n: historyStore.entries.length })
+        }}</span>
         <v-spacer />
-        <v-btn size="x-small" variant="text" prepend-icon="mdi-delete-sweep-outline" class="text-none" @click="historyStore.clear">
+        <v-btn
+          size="x-small"
+          variant="text"
+          prepend-icon="mdi-delete-sweep-outline"
+          class="text-none"
+          @click="historyStore.clear"
+        >
           {{ t('actions.clear') }}
         </v-btn>
       </div>

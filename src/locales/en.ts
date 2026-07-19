@@ -154,7 +154,15 @@ export default {
   },
   request: {
     urlPlaceholder: 'Enter request URL or paste a cURL command',
-    tabs: { params: 'Params', headers: 'Headers', body: 'Body', auth: 'Auth', scripts: 'Scripts', docs: 'Docs', settings: 'Settings' }
+    tabs: {
+      params: 'Params',
+      headers: 'Headers',
+      body: 'Body',
+      auth: 'Auth',
+      scripts: 'Scripts',
+      docs: 'Docs',
+      settings: 'Settings'
+    }
   },
   // İsteği kaydet çekmecesi
   saveRequest: {
@@ -200,7 +208,8 @@ export default {
   },
   // Ortam düzenleyici sekmesi
   environment: {
-    subtitle: 'Environment variables — used in request URLs, headers and bodies with double curly braces',
+    subtitle:
+      'Environment variables — used in request URLs, headers and bodies with double curly braces',
     variables: 'Variables',
     variablesHint: 'Key/value pairs; saving is automatic.',
     makeActive: 'Set Active',
@@ -220,7 +229,8 @@ export default {
     header: 'Header',
     queryParam: 'Query Param',
     inherit: 'Inherit auth from parent',
-    inheritHint: 'Authorization is inherited from the parent folder/collection; if none is defined above, no auth is applied.'
+    inheritHint:
+      'Authorization is inherited from the parent folder/collection; if none is defined above, no auth is applied.'
   },
   response: {
     tabs: { body: 'Body', headers: 'Headers', cookies: 'Cookies', tests: 'Tests' },
@@ -283,7 +293,8 @@ export default {
     descriptionLabel: 'Description',
     descriptionPlaceholder: 'Add notes describing this collection…',
     authHint: 'This authorization is applied to every request in the collection unless overridden.',
-    folderAuthHint: 'This authorization is applied to every request in this folder unless overridden.',
+    folderAuthHint:
+      'This authorization is applied to every request in this folder unless overridden.',
     noAuth: 'No Auth',
     noAuthHint: 'No authorization is applied to this collection.',
     inheritAuth: 'Inherit auth from parent',

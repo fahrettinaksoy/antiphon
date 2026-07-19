@@ -1,8 +1,10 @@
 import type { Auth, KeyValue, RequestFile } from '@schema/request'
+import type { TestResult } from './script-engine'
+import type { TemplateContext } from './template-engine'
 import { resolveAuth } from './auth'
-import { resolveTemplate, extractSecretKeys, type TemplateContext } from './template-engine'
-import { runPreRequestScript, runTestScript, type TestResult } from './script-engine'
 import { cacheResponse } from './response-cache'
+import { runPreRequestScript, runTestScript } from './script-engine'
+import { extractSecretKeys, resolveTemplate } from './template-engine'
 
 export interface CollectionRequestItem {
   path: string
@@ -18,7 +20,12 @@ export interface HttpCallResult {
   body: string
 }
 
-export type HttpCallFn = (args: { method: string; url: URL; headers: Record<string, string>; body?: string }) => Promise<HttpCallResult>
+export type HttpCallFn = (args: {
+  method: string
+  url: URL
+  headers: Record<string, string>
+  body?: string
+}) => Promise<HttpCallResult>
 
 export interface CollectionRunResult {
   path: string
@@ -59,11 +66,19 @@ function resolveAuthTemplate(auth: Auth | undefined, ctx: TemplateContext): Auth
   if (!auth) return auth
   switch (auth.type) {
     case 'basic':
-      return { ...auth, username: resolveTemplate(auth.username, ctx), password: resolveTemplate(auth.password, ctx) }
+      return {
+        ...auth,
+        username: resolveTemplate(auth.username, ctx),
+        password: resolveTemplate(auth.password, ctx)
+      }
     case 'bearer':
       return { ...auth, token: resolveTemplate(auth.token, ctx) }
     case 'apiKey':
-      return { ...auth, key: resolveTemplate(auth.key, ctx), value: resolveTemplate(auth.value, ctx) }
+      return {
+        ...auth,
+        key: resolveTemplate(auth.key, ctx),
+        value: resolveTemplate(auth.value, ctx)
+      }
     case 'jwt':
       return { ...auth, secret: resolveTemplate(auth.secret, ctx) }
     default:
@@ -71,7 +86,10 @@ function resolveAuthTemplate(auth: Auth | undefined, ctx: TemplateContext): Auth
   }
 }
 
-export async function runCollectionItem(item: CollectionRequestItem, options: CollectionRunOptions): Promise<CollectionRunResult> {
+export async function runCollectionItem(
+  item: CollectionRequestItem,
+  options: CollectionRunOptions
+): Promise<CollectionRunResult> {
   const startedAt = Date.now()
   const { file } = item
 
@@ -93,13 +111,19 @@ export async function runCollectionItem(item: CollectionRequestItem, options: Co
       ...authTexts(effectiveAuth)
     ]
     const secretKeys = extractSecretKeys(candidateTexts)
-    const secretEntries = await Promise.all(secretKeys.map(async (key) => [key, await options.resolveSecret(key)] as const))
+    const secretEntries = await Promise.all(
+      secretKeys.map(async (key) => [key, await options.resolveSecret(key)] as const)
+    )
     const secrets = Object.fromEntries(secretEntries)
-    const ctx: TemplateContext = { variables: preRequest.variables, resolveSecret: (key) => secrets[key] }
+    const ctx: TemplateContext = {
+      variables: preRequest.variables,
+      resolveSecret: (key) => secrets[key]
+    }
 
     const url = new URL(resolveTemplate(preRequest.request.url, ctx))
     for (const param of preRequest.request.params) {
-      if (param.enabled && param.key) url.searchParams.set(param.key, resolveTemplate(param.value, ctx))
+      if (param.enabled && param.key)
+        url.searchParams.set(param.key, resolveTemplate(param.value, ctx))
     }
 
     const headers: Record<string, string> = {}
@@ -119,7 +143,12 @@ export async function runCollectionItem(item: CollectionRequestItem, options: Co
         ? resolveTemplate(preRequest.request.body.content ?? '', ctx)
         : undefined
 
-    const response = await options.httpCall({ method: preRequest.request.method, url, headers, body: bodyContent })
+    const response = await options.httpCall({
+      method: preRequest.request.method,
+      url,
+      headers,
+      body: bodyContent
+    })
     const durationMs = Date.now() - startedAt
 
     const testRun = runTestScript(file.testScript ?? '', preRequest.variables, response)
@@ -131,7 +160,17 @@ export async function runCollectionItem(item: CollectionRequestItem, options: Co
       headers: response.headers,
       body: response.body,
       bodyEncoding: 'utf8',
-      timing: { prepare: 0, socketInit: 0, dns: 0, tcp: 0, tls: 0, ttfb: 0, download: 0, process: 0, total: durationMs },
+      timing: {
+        prepare: 0,
+        socketInit: 0,
+        dns: 0,
+        tcp: 0,
+        tls: 0,
+        ttfb: 0,
+        download: 0,
+        process: 0,
+        total: durationMs
+      },
       sizeBytes: response.body.length
     })
 
@@ -158,7 +197,10 @@ export async function runCollectionItem(item: CollectionRequestItem, options: Co
   }
 }
 
-export async function runCollection(items: CollectionRequestItem[], options: CollectionRunOptions): Promise<CollectionRunResult[]> {
+export async function runCollection(
+  items: CollectionRequestItem[],
+  options: CollectionRunOptions
+): Promise<CollectionRunResult[]> {
   const results: CollectionRunResult[] = []
   for (let i = 0; i < items.length; i++) {
     const result = await runCollectionItem(items[i], options)

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import type { GraphQLSchema } from 'graphql'
+import { computed } from 'vue'
 
 // `schema` typed as `unknown` at the prop boundary: Vue's cross-SFC prop type extraction can't
 // preserve GraphQLSchema's private class fields, which otherwise trips a spurious type error.
@@ -13,7 +13,9 @@ interface FieldSummary {
   argCount: number
 }
 
-function summarizeFields(getFields: (() => Record<string, { type: unknown; args: unknown[] }>) | undefined): FieldSummary[] {
+function summarizeFields(
+  getFields: (() => Record<string, { type: unknown; args: unknown[] }>) | undefined
+): FieldSummary[] {
   if (!getFields) return []
   return Object.entries(getFields()).map(([name, field]) => ({
     name,
@@ -30,9 +32,21 @@ const groups = computed(() => {
   const subscription = schema.getSubscriptionType()
 
   return [
-    { title: 'Query', icon: 'mdi-magnify', fields: summarizeFields(query?.getFields.bind(query) as never) },
-    { title: 'Mutation', icon: 'mdi-pencil-outline', fields: summarizeFields(mutation?.getFields.bind(mutation) as never) },
-    { title: 'Subscription', icon: 'mdi-access-point', fields: summarizeFields(subscription?.getFields.bind(subscription) as never) }
+    {
+      title: 'Query',
+      icon: 'mdi-magnify',
+      fields: summarizeFields(query?.getFields.bind(query) as never)
+    },
+    {
+      title: 'Mutation',
+      icon: 'mdi-pencil-outline',
+      fields: summarizeFields(mutation?.getFields.bind(mutation) as never)
+    },
+    {
+      title: 'Subscription',
+      icon: 'mdi-access-point',
+      fields: summarizeFields(subscription?.getFields.bind(subscription) as never)
+    }
   ].filter((g) => g.fields.length > 0)
 })
 </script>
@@ -54,9 +68,12 @@ const groups = computed(() => {
         </template>
         <v-list-item v-for="field in group.fields" :key="field.name" density="compact">
           <v-list-item-title class="antiphon-mono text-body-2">
-            {{ field.name }}<span v-if="field.argCount" class="text-medium-emphasis">({{ field.argCount }})</span>
+            {{ field.name
+            }}<span v-if="field.argCount" class="text-medium-emphasis">({{ field.argCount }})</span>
           </v-list-item-title>
-          <v-list-item-subtitle class="antiphon-mono text-caption">{{ field.typeName }}</v-list-item-subtitle>
+          <v-list-item-subtitle class="antiphon-mono text-caption">{{
+            field.typeName
+          }}</v-list-item-subtitle>
         </v-list-item>
       </v-list-group>
     </v-list>

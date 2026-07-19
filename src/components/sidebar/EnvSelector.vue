@@ -31,7 +31,10 @@ async function editActiveEnvironment() {
   <div class="d-flex align-center ga-1">
     <v-select
       :model-value="environmentsStore.activeEnvironmentPath"
-      :items="[{ title: 'Environment yok', value: null }, ...environmentsStore.list.map((e) => ({ title: e.name, value: e.path }))]"
+      :items="[
+        { title: 'Environment yok', value: null },
+        ...environmentsStore.list.map((e) => ({ title: e.name, value: e.path }))
+      ]"
       density="compact"
       hide-details
       style="min-width: 180px"

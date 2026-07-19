@@ -1,9 +1,9 @@
 <script setup lang="ts">
+import { useMagicKeys } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import { useMagicKeys } from '@vueuse/core'
-import { useUiStore } from '../../stores/ui'
 import { useTabsStore } from '../../stores/tabs'
+import { useUiStore } from '../../stores/ui'
 import { useWorkspaceStore } from '../../stores/workspace'
 
 const { t } = useI18n()
@@ -21,17 +21,54 @@ interface Command {
 }
 
 const commands = computed<Command[]>(() => [
-  { id: 'new-request', title: t('actions.newRequest'), icon: 'mdi-plus-circle-outline', run: () => tabsStore.openNewTab() },
-  { id: 'new-ws', title: 'Yeni WebSocket Bağlantısı', icon: 'mdi-swap-vertical-bold', run: () => tabsStore.openNewTab('Yeni WebSocket', 'ws') },
-  { id: 'new-sse', title: 'Yeni SSE Akışı', icon: 'mdi-access-point', run: () => tabsStore.openNewTab('Yeni SSE', 'sse') },
-  { id: 'new-graphql', title: 'Yeni GraphQL İsteği', icon: 'mdi-graphql', run: () => tabsStore.openNewTab('Yeni GraphQL', 'graphql') },
-  { id: 'new-mcp', title: 'Yeni MCP Bağlantısı', icon: 'mdi-hexagon-multiple-outline', run: () => tabsStore.openNewTab('Yeni MCP', 'mcp') },
-  { id: 'open-workspace', title: t('actions.openWorkspace'), icon: 'mdi-folder-open-outline', run: () => workspaceStore.openWorkspace() },
-  { id: 'toggle-theme', title: uiStore.themeName === 'antiphonDark' ? t('settings.light') : t('settings.dark'), icon: 'mdi-theme-light-dark', run: () => uiStore.toggleTheme() }
+  {
+    id: 'new-request',
+    title: t('actions.newRequest'),
+    icon: 'mdi-plus-circle-outline',
+    run: () => tabsStore.openNewTab()
+  },
+  {
+    id: 'new-ws',
+    title: 'Yeni WebSocket Bağlantısı',
+    icon: 'mdi-swap-vertical-bold',
+    run: () => tabsStore.openNewTab('Yeni WebSocket', 'ws')
+  },
+  {
+    id: 'new-sse',
+    title: 'Yeni SSE Akışı',
+    icon: 'mdi-access-point',
+    run: () => tabsStore.openNewTab('Yeni SSE', 'sse')
+  },
+  {
+    id: 'new-graphql',
+    title: 'Yeni GraphQL İsteği',
+    icon: 'mdi-graphql',
+    run: () => tabsStore.openNewTab('Yeni GraphQL', 'graphql')
+  },
+  {
+    id: 'new-mcp',
+    title: 'Yeni MCP Bağlantısı',
+    icon: 'mdi-hexagon-multiple-outline',
+    run: () => tabsStore.openNewTab('Yeni MCP', 'mcp')
+  },
+  {
+    id: 'open-workspace',
+    title: t('actions.openWorkspace'),
+    icon: 'mdi-folder-open-outline',
+    run: () => workspaceStore.openWorkspace()
+  },
+  {
+    id: 'toggle-theme',
+    title: uiStore.themeName === 'antiphonDark' ? t('settings.light') : t('settings.dark'),
+    icon: 'mdi-theme-light-dark',
+    run: () => uiStore.toggleTheme()
+  }
 ])
 
 const filtered = computed(() =>
-  commands.value.filter((command) => command.title.toLowerCase().includes(query.value.toLowerCase()))
+  commands.value.filter((command) =>
+    command.title.toLowerCase().includes(query.value.toLowerCase())
+  )
 )
 
 function runCommand(command: Command) {
@@ -68,7 +105,12 @@ void Ctrl_K
       />
       <v-divider />
       <v-list density="compact" class="py-1">
-        <v-list-item v-for="command in filtered" :key="command.id" :prepend-icon="command.icon" @click="runCommand(command)">
+        <v-list-item
+          v-for="command in filtered"
+          :key="command.id"
+          :prepend-icon="command.icon"
+          @click="runCommand(command)"
+        >
           <v-list-item-title>{{ command.title }}</v-list-item-title>
         </v-list-item>
         <v-list-item v-if="filtered.length === 0">

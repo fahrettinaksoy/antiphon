@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useI18n } from '@/composables/i18n'
-import { useRouter } from 'vue-router'
 import type { WorkspaceMetaDto, WorkspaceSyncDirection } from '@shared/ipc-contract'
-import { useWorkspacesStore } from '../../stores/workspaces'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useI18n } from '@/composables/i18n'
 import { useUiStore } from '../../stores/ui'
+import { useWorkspacesStore } from '../../stores/workspaces'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -72,7 +72,13 @@ async function remove(meta: WorkspaceMetaDto) {
 <template>
   <v-menu v-model="menuOpen" :close-on-content-click="false" @update:model-value="search = ''">
     <template #activator="{ props: menuProps }">
-      <v-btn v-bind="menuProps" variant="text" size="small" append-icon="mdi-chevron-down" class="text-none antiphon-nav__link">
+      <v-btn
+        v-bind="menuProps"
+        variant="text"
+        size="small"
+        append-icon="mdi-chevron-down"
+        class="text-none antiphon-nav__link"
+      >
         {{ t('header.workspaces') }}
       </v-btn>
     </template>
@@ -107,7 +113,9 @@ async function remove(meta: WorkspaceMetaDto) {
             <v-icon :icon="visibilityIcon(meta)" size="20" class="mr-3" />
           </template>
           <v-list-item-title class="text-body-1">{{ meta.name }}</v-list-item-title>
-          <v-list-item-subtitle v-if="storageLabel(meta)" class="text-caption">{{ storageLabel(meta) }}</v-list-item-subtitle>
+          <v-list-item-subtitle v-if="storageLabel(meta)" class="text-caption">{{
+            storageLabel(meta)
+          }}</v-list-item-subtitle>
 
           <template #append>
             <div class="antiphon-ws-actions d-flex align-center">
@@ -155,7 +163,13 @@ async function remove(meta: WorkspaceMetaDto) {
         </v-list-item>
       </v-list>
 
-      <v-alert v-if="workspacesStore.error" type="error" variant="tonal" density="compact" class="ma-2">
+      <v-alert
+        v-if="workspacesStore.error"
+        type="error"
+        variant="tonal"
+        density="compact"
+        class="ma-2"
+      >
         {{ workspacesStore.error }}
       </v-alert>
     </v-card>

@@ -1,4 +1,14 @@
-import type { Auth, Body, EnvironmentFile, FolderMeta, FolderMetaInput, HttpMethod, KeyValue, RequestFile, RequestSettings } from '@schema/request'
+import type {
+  Auth,
+  Body,
+  EnvironmentFile,
+  FolderMeta,
+  FolderMetaInput,
+  HttpMethod,
+  KeyValue,
+  RequestFile,
+  RequestSettings
+} from '@schema/request'
 
 export interface HttpRequestPayload {
   id: string
@@ -97,7 +107,7 @@ export interface WorkspaceMetaDto {
   lastOpenedAt: number
 }
 
-export type CreateWorkspaceInput = {
+export interface CreateWorkspaceInput {
   name: string
   type: WorkspaceVisibility
   storage:
@@ -119,7 +129,18 @@ export interface WorkspaceUpdateInput {
   type?: WorkspaceVisibility
 }
 
-export type Platform = 'aix' | 'android' | 'darwin' | 'freebsd' | 'haiku' | 'linux' | 'openbsd' | 'sunos' | 'win32' | 'cygwin' | 'netbsd'
+export type Platform =
+  | 'aix'
+  | 'android'
+  | 'darwin'
+  | 'freebsd'
+  | 'haiku'
+  | 'linux'
+  | 'openbsd'
+  | 'sunos'
+  | 'win32'
+  | 'cygwin'
+  | 'netbsd'
 
 export interface AppInfo {
   version: string
@@ -374,80 +395,112 @@ export const IpcChannels = {
 export type IpcChannel = (typeof IpcChannels)[keyof typeof IpcChannels]
 
 export interface AntiphonApi {
-  getAppInfo(): Promise<AppInfo>
-  openWorkspace(): Promise<WorkspaceNode | null>
-  listWorkspaces(): Promise<WorkspaceMetaDto[]>
-  getActiveWorkspaceId(): Promise<string | null>
-  createWorkspace(input: CreateWorkspaceInput): Promise<OpenWorkspaceResult>
-  openWorkspaceById(id: string): Promise<OpenWorkspaceResult | null>
-  deleteWorkspace(id: string): Promise<WorkspaceMetaDto[]>
-  renameWorkspace(id: string, name: string): Promise<void>
-  updateWorkspace(id: string, patch: WorkspaceUpdateInput): Promise<void>
-  syncWorkspace(id: string, direction: WorkspaceSyncDirection): Promise<WorkspaceNode | null>
-  pickDirectory(): Promise<string | null>
-  sendRequest(payload: HttpRequestPayload): Promise<HttpResponsePayload>
-  cancelRequest(requestId: string): Promise<void>
-  onWorkspaceChanged(callback: (tree: WorkspaceNode) => void): () => void
-  readRequestFile(path: string): Promise<RequestFileDto>
-  writeRequestFile(path: string, data: RequestFileDto): Promise<void>
-  createRequest(folderPath: string, name: string): Promise<WorkspaceNode>
-  createFolder(parentPath: string, name: string): Promise<WorkspaceNode>
-  deleteNode(path: string): Promise<void>
-  renameNode(path: string, newName: string): Promise<WorkspaceNode>
-  readFolderMeta(folderPath: string): Promise<FolderMetaDto | null>
-  writeFolderMeta(folderPath: string, data: FolderMetaInputDto): Promise<void>
-  parseCurl(command: string): Promise<CurlParseResult>
+  getAppInfo: () => Promise<AppInfo>
+  openWorkspace: () => Promise<WorkspaceNode | null>
+  listWorkspaces: () => Promise<WorkspaceMetaDto[]>
+  getActiveWorkspaceId: () => Promise<string | null>
+  createWorkspace: (input: CreateWorkspaceInput) => Promise<OpenWorkspaceResult>
+  openWorkspaceById: (id: string) => Promise<OpenWorkspaceResult | null>
+  deleteWorkspace: (id: string) => Promise<WorkspaceMetaDto[]>
+  renameWorkspace: (id: string, name: string) => Promise<void>
+  updateWorkspace: (id: string, patch: WorkspaceUpdateInput) => Promise<void>
+  syncWorkspace: (id: string, direction: WorkspaceSyncDirection) => Promise<WorkspaceNode | null>
+  pickDirectory: () => Promise<string | null>
+  sendRequest: (payload: HttpRequestPayload) => Promise<HttpResponsePayload>
+  cancelRequest: (requestId: string) => Promise<void>
+  onWorkspaceChanged: (callback: (tree: WorkspaceNode) => void) => () => void
+  readRequestFile: (path: string) => Promise<RequestFileDto>
+  writeRequestFile: (path: string, data: RequestFileDto) => Promise<void>
+  createRequest: (folderPath: string, name: string) => Promise<WorkspaceNode>
+  createFolder: (parentPath: string, name: string) => Promise<WorkspaceNode>
+  deleteNode: (path: string) => Promise<void>
+  renameNode: (path: string, newName: string) => Promise<WorkspaceNode>
+  readFolderMeta: (folderPath: string) => Promise<FolderMetaDto | null>
+  writeFolderMeta: (folderPath: string, data: FolderMetaInputDto) => Promise<void>
+  parseCurl: (command: string) => Promise<CurlParseResult>
   /** Genel dosya seçme diyaloğu — seçilen dosyanın mutlak yolu, iptal edilirse null. */
-  chooseFile(): Promise<string | null>
-  importPostmanCollection(workspaceRoot: string): Promise<ImportResult>
-  importOpenapiSpec(workspaceRoot: string): Promise<ImportResult>
-  listEnvironments(workspaceRoot: string): Promise<EnvironmentSummary[]>
-  readEnvironment(path: string): Promise<EnvironmentFileDto>
-  writeEnvironment(path: string, data: EnvironmentFileDto): Promise<void>
-  createEnvironment(workspaceRoot: string, name: string): Promise<EnvironmentSummary>
-  deleteEnvironment(path: string): Promise<void>
-  getSecret(key: string): Promise<string | undefined>
-  setSecret(key: string, value: string): Promise<void>
-  listSecretKeys(): Promise<string[]>
-  deleteSecret(key: string): Promise<void>
-  connectWebSocket(connectionId: string, url: string, headers: KeyValue[]): Promise<void>
-  sendWebSocketMessage(connectionId: string, data: string, isBinary?: boolean): Promise<void>
-  closeWebSocket(connectionId: string): Promise<void>
-  onWebSocketEvent(callback: (event: WsEvent) => void): () => void
-  connectSse(connectionId: string, url: string, headers: KeyValue[]): Promise<void>
-  closeSse(connectionId: string): Promise<void>
-  onSseEvent(callback: (event: SseEvent) => void): () => void
-  subscribeGraphql(connectionId: string, url: string, query: string, variables: Record<string, unknown>, headers: KeyValue[]): Promise<void>
-  unsubscribeGraphql(connectionId: string): Promise<void>
-  onGraphqlSubscriptionEvent(callback: (event: GraphqlSubscriptionEvent) => void): () => void
-  isGitRepo(dir: string): Promise<boolean>
-  initGitRepo(dir: string): Promise<void>
-  getGitStatus(dir: string): Promise<GitStatusSummaryDto>
-  stageGitFile(dir: string, filepath: string): Promise<void>
-  unstageGitFile(dir: string, filepath: string): Promise<void>
-  stageAllGitFiles(dir: string): Promise<void>
-  commitGit(dir: string, message: string, authorName: string, authorEmail: string): Promise<string>
-  getGitLog(dir: string, depth?: number): Promise<GitCommitSummaryDto[]>
-  diffGitFile(dir: string, filepath: string): Promise<string>
-  pullGit(dir: string, authorName: string, authorEmail: string, credentials?: GitCredentialsDto): Promise<void>
-  pushGit(dir: string, credentials?: GitCredentialsDto): Promise<void>
-  runCollection(runId: string, folderPath: string, workspaceRoot: string, variables: Record<string, string>): Promise<CollectionRunResultDto[]>
-  onCollectionRunProgress(callback: (event: CollectionRunProgressEvent) => void): () => void
-  getNetworkSettings(): Promise<NetworkSettingsDto>
-  setNetworkSettings(settings: NetworkSettingsDto): Promise<void>
-  listCookies(): Promise<CookieSummaryDto[]>
-  clearCookies(): Promise<void>
-  getWorkspaceSettingsOverride(workspaceRoot: string): Promise<WorkspaceSettingsOverrideDto>
-  setWorkspaceSettingsOverride(workspaceRoot: string, override: WorkspaceSettingsOverrideDto): Promise<void>
-  connectMcp(connectionId: string, config: McpConnectionConfigDto): Promise<void>
-  disconnectMcp(connectionId: string): Promise<void>
-  listMcpTools(connectionId: string): Promise<McpToolSummaryDto[]>
-  listMcpResources(connectionId: string): Promise<McpResourceSummaryDto[]>
-  listMcpPrompts(connectionId: string): Promise<McpPromptSummaryDto[]>
-  callMcpTool(connectionId: string, toolName: string, args: Record<string, unknown>): Promise<unknown>
-  readMcpResource(connectionId: string, uri: string): Promise<unknown>
-  getMcpPrompt(connectionId: string, promptName: string, args: Record<string, string>): Promise<unknown>
-  startMockServer(port: number): Promise<MockServerStatusDto>
-  stopMockServer(): Promise<void>
-  getMockServerStatus(): Promise<MockServerStatusDto>
+  chooseFile: () => Promise<string | null>
+  importPostmanCollection: (workspaceRoot: string) => Promise<ImportResult>
+  importOpenapiSpec: (workspaceRoot: string) => Promise<ImportResult>
+  listEnvironments: (workspaceRoot: string) => Promise<EnvironmentSummary[]>
+  readEnvironment: (path: string) => Promise<EnvironmentFileDto>
+  writeEnvironment: (path: string, data: EnvironmentFileDto) => Promise<void>
+  createEnvironment: (workspaceRoot: string, name: string) => Promise<EnvironmentSummary>
+  deleteEnvironment: (path: string) => Promise<void>
+  getSecret: (key: string) => Promise<string | undefined>
+  setSecret: (key: string, value: string) => Promise<void>
+  listSecretKeys: () => Promise<string[]>
+  deleteSecret: (key: string) => Promise<void>
+  connectWebSocket: (connectionId: string, url: string, headers: KeyValue[]) => Promise<void>
+  sendWebSocketMessage: (connectionId: string, data: string, isBinary?: boolean) => Promise<void>
+  closeWebSocket: (connectionId: string) => Promise<void>
+  onWebSocketEvent: (callback: (event: WsEvent) => void) => () => void
+  connectSse: (connectionId: string, url: string, headers: KeyValue[]) => Promise<void>
+  closeSse: (connectionId: string) => Promise<void>
+  onSseEvent: (callback: (event: SseEvent) => void) => () => void
+  subscribeGraphql: (
+    connectionId: string,
+    url: string,
+    query: string,
+    variables: Record<string, unknown>,
+    headers: KeyValue[]
+  ) => Promise<void>
+  unsubscribeGraphql: (connectionId: string) => Promise<void>
+  onGraphqlSubscriptionEvent: (callback: (event: GraphqlSubscriptionEvent) => void) => () => void
+  isGitRepo: (dir: string) => Promise<boolean>
+  initGitRepo: (dir: string) => Promise<void>
+  getGitStatus: (dir: string) => Promise<GitStatusSummaryDto>
+  stageGitFile: (dir: string, filepath: string) => Promise<void>
+  unstageGitFile: (dir: string, filepath: string) => Promise<void>
+  stageAllGitFiles: (dir: string) => Promise<void>
+  commitGit: (
+    dir: string,
+    message: string,
+    authorName: string,
+    authorEmail: string
+  ) => Promise<string>
+  getGitLog: (dir: string, depth?: number) => Promise<GitCommitSummaryDto[]>
+  diffGitFile: (dir: string, filepath: string) => Promise<string>
+  pullGit: (
+    dir: string,
+    authorName: string,
+    authorEmail: string,
+    credentials?: GitCredentialsDto
+  ) => Promise<void>
+  pushGit: (dir: string, credentials?: GitCredentialsDto) => Promise<void>
+  runCollection: (
+    runId: string,
+    folderPath: string,
+    workspaceRoot: string,
+    variables: Record<string, string>
+  ) => Promise<CollectionRunResultDto[]>
+  onCollectionRunProgress: (callback: (event: CollectionRunProgressEvent) => void) => () => void
+  getNetworkSettings: () => Promise<NetworkSettingsDto>
+  setNetworkSettings: (settings: NetworkSettingsDto) => Promise<void>
+  listCookies: () => Promise<CookieSummaryDto[]>
+  clearCookies: () => Promise<void>
+  getWorkspaceSettingsOverride: (workspaceRoot: string) => Promise<WorkspaceSettingsOverrideDto>
+  setWorkspaceSettingsOverride: (
+    workspaceRoot: string,
+    override: WorkspaceSettingsOverrideDto
+  ) => Promise<void>
+  connectMcp: (connectionId: string, config: McpConnectionConfigDto) => Promise<void>
+  disconnectMcp: (connectionId: string) => Promise<void>
+  listMcpTools: (connectionId: string) => Promise<McpToolSummaryDto[]>
+  listMcpResources: (connectionId: string) => Promise<McpResourceSummaryDto[]>
+  listMcpPrompts: (connectionId: string) => Promise<McpPromptSummaryDto[]>
+  callMcpTool: (
+    connectionId: string,
+    toolName: string,
+    args: Record<string, unknown>
+  ) => Promise<unknown>
+  readMcpResource: (connectionId: string, uri: string) => Promise<unknown>
+  getMcpPrompt: (
+    connectionId: string,
+    promptName: string,
+    args: Record<string, string>
+  ) => Promise<unknown>
+  startMockServer: (port: number) => Promise<MockServerStatusDto>
+  stopMockServer: () => Promise<void>
+  getMockServerStatus: () => Promise<MockServerStatusDto>
 }

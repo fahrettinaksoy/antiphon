@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { useI18n } from '@/composables/i18n'
-import MethodSelect from './MethodSelect.vue'
-import AppLtr from '../common/AppLtr.vue'
-import type { HttpMethod } from '../../stores/tabs'
 import type { KeyValue } from '@schema/request'
+import type { HttpMethod } from '../../stores/tabs'
+import { useI18n } from '@/composables/i18n'
+import { ipc } from '@/lib/ipc'
+import AppLtr from '../common/AppLtr.vue'
+import MethodSelect from './MethodSelect.vue'
 
+const emit = defineEmits<{ send: []; save: [] }>()
 const method = defineModel<HttpMethod>('method', { required: true })
 const url = defineModel<string>('url', { required: true })
 const headers = defineModel<KeyValue[]>('headers', { required: true })
 
-const emit = defineEmits<{ send: []; save: [] }>()
 const { t } = useI18n()
 
 async function handlePaste(event: ClipboardEvent) {
@@ -40,9 +40,19 @@ async function handlePaste(event: ClipboardEvent) {
         @paste="handlePaste"
       />
     </AppLtr>
-    <v-btn color="primary" prepend-icon="mdi-send-variant-outline" class="text-none" @click="emit('send')">
+    <v-btn
+      color="primary"
+      prepend-icon="mdi-send-variant-outline"
+      class="text-none"
+      @click="emit('send')"
+    >
       {{ t('actions.send') }}
     </v-btn>
-    <v-btn icon="mdi-content-save-outline" variant="text" :title="t('actions.save')" @click="emit('save')" />
+    <v-btn
+      icon="mdi-content-save-outline"
+      variant="text"
+      :title="t('actions.save')"
+      @click="emit('save')"
+    />
   </div>
 </template>

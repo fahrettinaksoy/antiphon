@@ -1,6 +1,6 @@
-import { ipc } from '@/lib/ipc'
-import { defineStore } from 'pinia'
 import type { WorkspaceNode } from '@shared/ipc-contract'
+import { defineStore } from 'pinia'
+import { ipc } from '@/lib/ipc'
 import { useEnvironmentsStore } from './environments'
 
 let watcherUnsubscribe: (() => void) | null = null

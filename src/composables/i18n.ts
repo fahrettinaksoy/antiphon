@@ -1,5 +1,5 @@
-import { useI18n as useVueI18n } from 'vue-i18n'
 import type trMessages from '../locales/tr'
+import { useI18n as useVueI18n } from 'vue-i18n'
 
 // tr mesaj şemasının tüm nokta-yollarının union'ı: "app.name" | "settings.theme" | "workspace.visibility.personal" | …
 type MessageKey<T> = {

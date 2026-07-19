@@ -1,22 +1,22 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
-import { computed } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import UrlBar from '../request/UrlBar.vue'
-import RequestPanel from '../request/RequestPanel.vue'
-import ResponseViewer from '../response/ResponseViewer.vue'
-import WsPanel from '../realtime/WsPanel.vue'
-import SsePanel from '../realtime/SsePanel.vue'
-import GraphqlPanel from '../graphql/GraphqlPanel.vue'
-import McpPanel from '../mcp/McpPanel.vue'
-import CollectionEditor from '../collection/CollectionEditor.vue'
-import EnvironmentEditor from '../environment/EnvironmentEditor.vue'
-import { useTabsStore } from '../../stores/tabs'
-import { useWorkspaceStore } from '../../stores/workspace'
+import { computed } from 'vue'
+import { ipc } from '@/lib/ipc'
 import { useEnvironmentsStore } from '../../stores/environments'
 import { useHistoryStore } from '../../stores/history'
 import { useResponsesStore } from '../../stores/responses'
+import { useTabsStore } from '../../stores/tabs'
 import { useUiStore } from '../../stores/ui'
+import { useWorkspaceStore } from '../../stores/workspace'
+import CollectionEditor from '../collection/CollectionEditor.vue'
+import EnvironmentEditor from '../environment/EnvironmentEditor.vue'
+import GraphqlPanel from '../graphql/GraphqlPanel.vue'
+import McpPanel from '../mcp/McpPanel.vue'
+import SsePanel from '../realtime/SsePanel.vue'
+import WsPanel from '../realtime/WsPanel.vue'
+import RequestPanel from '../request/RequestPanel.vue'
+import UrlBar from '../request/UrlBar.vue'
+import ResponseViewer from '../response/ResponseViewer.vue'
 
 const props = defineProps<{ tabId: string | null }>()
 
@@ -28,7 +28,11 @@ const responsesStore = useResponsesStore()
 const uiStore = useUiStore()
 
 const tab = computed(() => tabsStore.tabs.find((t) => t.id === props.tabId) ?? null)
-const responseState = computed(() => (props.tabId ? responsesStore.forTab(props.tabId) : { response: null, error: null, isLoading: false }))
+const responseState = computed(() =>
+  props.tabId
+    ? responsesStore.forTab(props.tabId)
+    : { response: null, error: null, isLoading: false }
+)
 
 async function sendActiveRequest() {
   const current = tab.value
@@ -149,7 +153,11 @@ defineExpose({ saveActiveTab })
         </v-col>
         <!-- MD3: istek/yanıt ayrımı çizgiyle değil yanıt panelinin tonal yüzeyiyle yapılır. -->
         <v-col cols="6" class="h-100 overflow-hidden bg-surface-light">
-          <ResponseViewer :response="responseState.response" :is-loading="responseState.isLoading" :error="responseState.error" />
+          <ResponseViewer
+            :response="responseState.response"
+            :is-loading="responseState.isLoading"
+            :error="responseState.error"
+          />
         </v-col>
       </v-row>
     </template>

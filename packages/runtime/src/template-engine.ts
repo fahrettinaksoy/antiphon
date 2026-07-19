@@ -6,7 +6,9 @@ export interface TemplateContext {
   resolveSecret: (key: string) => string | undefined
 }
 
-const TOKEN_PATTERN = /\{\{\s*([^}]+?)\s*\}\}/g
+// İç ifade boşlukları tüketicide trim'lenir (regex'te çift-taraflı `\s*` süper-lineer
+// backtracking'e yol açtığından bilinçli olarak sade tutuldu).
+const TOKEN_PATTERN = /\{\{([^}]+)\}\}/g
 const RESPONSE_PATTERN = /^response\(\s*['"]([^'"]+)['"]\s*\)(?:\.(.+))?$/
 
 function getByPath(source: unknown, path: string): unknown {
@@ -54,7 +56,8 @@ function resolveExpression(expression: string, ctx: TemplateContext): string | u
 
 // Çözülemeyen token'lar okunabilirlik için olduğu gibi bırakılır (silent boşluk yerine hata ayıklanabilir iz).
 export function resolveTemplate(text: string, ctx: TemplateContext): string {
-  return text.replace(TOKEN_PATTERN, (match, expression: string) => {
+  return text.replace(TOKEN_PATTERN, (match, rawExpression: string) => {
+    const expression = rawExpression.trim()
     const resolved = resolveExpression(expression, ctx)
     return resolved !== undefined ? resolved : match
   })
@@ -66,7 +69,7 @@ export function extractSecretKeys(texts: Array<string | undefined>): string[] {
   for (const text of texts) {
     if (!text) continue
     for (const match of text.matchAll(TOKEN_PATTERN)) {
-      const expression = match[1]
+      const expression = match[1].trim()
       if (expression.startsWith('secret:')) keys.add(expression.slice('secret:'.length).trim())
     }
   }

@@ -2,14 +2,16 @@
 import { ref } from 'vue'
 import AppDefaults from '../common/AppDefaults.vue'
 
-const open = defineModel<boolean>({ required: true })
 const emit = defineEmits<{ confirm: [{ username: string; password: string } | undefined] }>()
-
+const open = defineModel<boolean>({ required: true })
 const username = ref('')
 const password = ref('')
 
 function confirmWithCredentials() {
-  emit('confirm', username.value ? { username: username.value, password: password.value } : undefined)
+  emit(
+    'confirm',
+    username.value ? { username: username.value, password: password.value } : undefined
+  )
   open.value = false
 }
 
@@ -25,11 +27,17 @@ function confirmWithoutCredentials() {
       <AppDefaults preset="dialogForm">
         <v-card-text>
           <p class="text-caption text-medium-emphasis mb-3">
-            Uzak sunucu (remote) HTTPS kimlik doğrulama istiyorsa kullanıcı adı ve personal access token girin. SSH anahtarı
-            veya credential helper kullanıyorsanız boş bırakıp devam edebilirsiniz.
+            Uzak sunucu (remote) HTTPS kimlik doğrulama istiyorsa kullanıcı adı ve personal access
+            token girin. SSH anahtarı veya credential helper kullanıyorsanız boş bırakıp devam
+            edebilirsiniz.
           </p>
           <v-text-field v-model="username" label="Kullanıcı adı" placeholder="git-kullanici-adi" />
-          <v-text-field v-model="password" label="Token / Parola" type="password" placeholder="ghp_xxxxxxxxxxxxxxxx" />
+          <v-text-field
+            v-model="password"
+            label="Token / Parola"
+            type="password"
+            placeholder="ghp_xxxxxxxxxxxxxxxx"
+          />
         </v-card-text>
         <v-card-actions>
           <v-spacer />

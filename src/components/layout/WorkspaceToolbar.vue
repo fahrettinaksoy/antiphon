@@ -2,9 +2,9 @@
 // Çalışma alanı araç çubuğu — çalışma alanına ÖZEL kimlik ve eylemler burada yaşar
 // (app bar globaldir): solda alan adı + görünürlük, sağda İçe Aktar, ortam seçici, Git, Geçmiş.
 import { computed, ref } from 'vue'
-import { ipc } from '@/lib/ipc'
-import { useI18n } from '@/composables/i18n'
 import { useRouter } from 'vue-router'
+import { useI18n } from '@/composables/i18n'
+import { ipc } from '@/lib/ipc'
 import { useUiStore } from '../../stores/ui'
 import { useWorkspaceStore } from '../../stores/workspace'
 import { useWorkspacesStore } from '../../stores/workspaces'
@@ -33,7 +33,10 @@ const snackbar = ref<{ open: boolean; text: string }>({ open: false, text: '' })
 
 function showResult(kind: string, result: { importedCount: number; skipped: string[] }) {
   const skippedText = result.skipped.length > 0 ? `, ${result.skipped.length} atlandı` : ''
-  snackbar.value = { open: true, text: `${kind}: ${result.importedCount} istek içe aktarıldı${skippedText}` }
+  snackbar.value = {
+    open: true,
+    text: `${kind}: ${result.importedCount} istek içe aktarıldı${skippedText}`
+  }
 }
 
 async function importPostman() {
@@ -52,9 +55,15 @@ async function importOpenapi() {
 <template>
   <div class="antiphon-ws-toolbar d-flex align-center ga-2 px-3">
     <!-- Çalışma alanı kimliği: görünürlük ikonu + ad (tıklayınca alan listesi) -->
-    <button type="button" class="antiphon-ws-toolbar__identity d-flex align-center ga-2" @click="router.push('/workspaces')">
+    <button
+      type="button"
+      class="antiphon-ws-toolbar__identity d-flex align-center ga-2"
+      @click="router.push('/workspaces')"
+    >
       <v-icon :icon="visibilityIcon()" size="16" class="text-medium-emphasis" />
-      <span class="text-body-2 font-weight-medium text-truncate">{{ activeMeta?.name ?? '—' }}</span>
+      <span class="text-body-2 font-weight-medium text-truncate">{{
+        activeMeta?.name ?? '—'
+      }}</span>
       <v-icon icon="mdi-chevron-down" size="14" class="text-medium-emphasis" />
     </button>
 
@@ -63,7 +72,13 @@ async function importOpenapi() {
     <!-- Bağlam eylemleri -->
     <v-menu>
       <template #activator="{ props: menuProps }">
-        <v-btn v-bind="menuProps" variant="text" size="small" prepend-icon="mdi-tray-arrow-down" class="text-none">
+        <v-btn
+          v-bind="menuProps"
+          variant="text"
+          size="small"
+          prepend-icon="mdi-tray-arrow-down"
+          class="text-none"
+        >
           {{ t('header.import') }}
         </v-btn>
       </template>
@@ -80,7 +95,14 @@ async function importOpenapi() {
     <EnvSelector />
 
     <div class="antiphon-icon-group">
-      <v-btn icon="mdi-source-branch" variant="text" density="comfortable" size="small" title="Git" @click="uiStore.toggleGitDrawer" />
+      <v-btn
+        icon="mdi-source-branch"
+        variant="text"
+        density="comfortable"
+        size="small"
+        title="Git"
+        @click="uiStore.toggleGitDrawer"
+      />
       <v-btn
         icon="mdi-history"
         variant="text"

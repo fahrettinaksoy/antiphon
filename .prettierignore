@@ -1,0 +1,19 @@
+# Bağımlılıklar / derleme çıktıları
+node_modules
+dist
+out
+coverage
+
+# Rust / Tauri üretilmiş + derleme çıktıları
+src-tauri/target
+src-tauri/gen
+
+# Otomatik üretilen tip tanımları — elle biçimlendirilmez
+**/*.d.ts
+
+# Lockfile'lar (elle biçimlendirilmez)
+package-lock.json
+
+# Değişmez/otomatik dosyalar
+*.min.*
+CHANGELOG.md

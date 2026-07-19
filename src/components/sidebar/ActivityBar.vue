@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { SidebarSection } from '../../stores/ui'
 import { computed } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import { useUiStore, type SidebarSection } from '../../stores/ui'
+import { useUiStore } from '../../stores/ui'
 
 const { t } = useI18n()
 const uiStore = useUiStore()
@@ -30,7 +31,9 @@ const sections = computed<{ key: SidebarSection; icon: string; label: string }[]
           v-bind="tooltipProps"
           type="button"
           class="antiphon-activity-item"
-          :class="{ 'antiphon-activity-item--active': uiStore.activeSidebarSection === section.key }"
+          :class="{
+            'antiphon-activity-item--active': uiStore.activeSidebarSection === section.key
+          }"
           :aria-label="section.label"
           @click="uiStore.setSidebarSection(section.key)"
         >
@@ -67,7 +70,9 @@ const sections = computed<{ key: SidebarSection; icon: string; label: string }[]
   cursor: pointer;
   border-radius: 12px;
   background: transparent;
-  transition: opacity 0.15s ease, background-color 0.15s ease;
+  transition:
+    opacity 0.15s ease,
+    background-color 0.15s ease;
 }
 .antiphon-activity-item:hover {
   opacity: 0.9;

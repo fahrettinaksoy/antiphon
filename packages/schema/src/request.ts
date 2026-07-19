@@ -15,8 +15,17 @@ export const AuthSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('none') }),
   z.object({ type: z.literal('basic'), username: z.string(), password: z.string() }),
   z.object({ type: z.literal('bearer'), token: z.string() }),
-  z.object({ type: z.literal('apiKey'), key: z.string(), value: z.string(), in: z.enum(['header', 'query']) }),
-  z.object({ type: z.literal('jwt'), secret: z.string(), payload: z.record(z.string(), z.unknown()).optional() })
+  z.object({
+    type: z.literal('apiKey'),
+    key: z.string(),
+    value: z.string(),
+    in: z.enum(['header', 'query'])
+  }),
+  z.object({
+    type: z.literal('jwt'),
+    secret: z.string(),
+    payload: z.record(z.string(), z.unknown()).optional()
+  })
 ])
 
 export type Auth = z.infer<typeof AuthSchema>

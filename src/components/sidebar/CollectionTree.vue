@@ -1,14 +1,14 @@
 <script setup lang="ts">
+import type { WorkspaceNode } from '@shared/ipc-contract'
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
-import { useWorkspaceStore } from '../../stores/workspace'
 import { useTabsStore } from '../../stores/tabs'
-import type { WorkspaceNode } from '@shared/ipc-contract'
+import { useWorkspaceStore } from '../../stores/workspace'
+import AppEmptyState from '../common/AppEmptyState.vue'
+import CollectionRunnerDialog from './CollectionRunnerDialog.vue'
+import FolderSettingsDialog from './FolderSettingsDialog.vue'
 import NewItemDialog from './NewItemDialog.vue'
 import NewItemMenu from './NewItemMenu.vue'
-import FolderSettingsDialog from './FolderSettingsDialog.vue'
-import CollectionRunnerDialog from './CollectionRunnerDialog.vue'
-import AppEmptyState from '../common/AppEmptyState.vue'
 import SidebarSection from './SidebarSection.vue'
 
 interface TreeItem {
@@ -41,12 +41,16 @@ const tabsStore = useTabsStore()
 
 // Çalışma alanı kökünü DEĞİL, kökün içindeki koleksiyonları/istekleri göster.
 // Kök = çalışma alanının kendisi; üst düzey klasörler = koleksiyonlar.
-const items = computed(() => (workspaceStore.tree?.children ?? []).map((node) => toTreeItem(node, 0)))
+const items = computed(() =>
+  (workspaceStore.tree?.children ?? []).map((node) => toTreeItem(node, 0))
+)
 
 // Standart bölüm arama + HTTP method filtresi (SidebarSection v-model'leri).
 const search = ref('')
 const methodFilter = ref<string[]>([])
-const methodFilterOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map((m) => ({ title: m, value: m }))
+const methodFilterOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'].map(
+  (m) => ({ title: m, value: m })
+)
 
 // Ağacı arama metni ve method filtresine göre daralt. Başlığı eşleşen klasörün altı
 // daraltılmaz (yalnızca method filtresi uygulanır); eşleşen çocuğu olmayan dallar gizlenir.
@@ -101,7 +105,11 @@ async function openCollection(item: TreeItem) {
 
 const menuTarget = ref<TreeItem | null>(null)
 
-const dialog = ref<{ open: boolean; mode: 'new-request' | 'new-folder' | 'new-collection' | 'rename'; target: TreeItem | null }>({
+const dialog = ref<{
+  open: boolean
+  mode: 'new-request' | 'new-folder' | 'new-collection' | 'rename'
+  target: TreeItem | null
+}>({
   open: false,
   mode: 'new-request',
   target: null
@@ -164,16 +172,19 @@ function openRunner(item: TreeItem) {
 
 <template>
   <SidebarSection
+    v-model:search="search"
+    v-model:filter="methodFilter"
     :title="t('sidebar.collections')"
     :count="items.length || undefined"
     searchable
     :search-placeholder="t('sidebar.searchCollections')"
     :filter-options="methodFilterOptions"
-    v-model:search="search"
-    v-model:filter="methodFilter"
   >
     <template #actions>
-      <NewItemMenu @new-http="openDialog('new-request', null)" @new-collection="openDialog('new-collection', null)" />
+      <NewItemMenu
+        @new-http="openDialog('new-request', null)"
+        @new-collection="openDialog('new-collection', null)"
+      />
     </template>
 
     <AppEmptyState
@@ -194,7 +205,12 @@ function openRunner(item: TreeItem) {
       @action="openDialog('new-collection', null)"
     />
 
-    <AppEmptyState v-else-if="filteredItems.length === 0" size="compact" icon="mdi-magnify" :title="t('sidebar.noMatches')" />
+    <AppEmptyState
+      v-else-if="filteredItems.length === 0"
+      size="compact"
+      icon="mdi-magnify"
+      :title="t('sidebar.noMatches')"
+    />
 
     <v-treeview
       v-else
@@ -219,13 +235,25 @@ function openRunner(item: TreeItem) {
           size="18"
           :color="item.isCollection ? 'primary' : 'warning'"
         />
-        <span v-else class="antiphon-method" :style="{ color: methodColor(item.method) }" @click="handleClick(item as TreeItem)">
+        <span
+          v-else
+          class="antiphon-method"
+          :style="{ color: methodColor(item.method) }"
+          @click="handleClick(item as TreeItem)"
+        >
           {{ (item.method ?? 'GET').toUpperCase() }}
         </span>
       </template>
       <template #title="{ item }">
-        <div class="d-flex align-center justify-space-between antiphon-tree-row" @click="handleClick(item as TreeItem)">
-          <span class="text-body-2 text-truncate" :class="{ 'font-weight-bold': item.isCollection }">{{ item.title }}</span>
+        <div
+          class="d-flex align-center justify-space-between antiphon-tree-row"
+          @click="handleClick(item as TreeItem)"
+        >
+          <span
+            class="text-body-2 text-truncate"
+            :class="{ 'font-weight-bold': item.isCollection }"
+            >{{ item.title }}</span
+          >
           <v-menu>
             <template #activator="{ props: menuProps }">
               <v-btn
@@ -239,7 +267,10 @@ function openRunner(item: TreeItem) {
             </template>
             <v-list density="compact">
               <template v-if="item.type === 'folder'">
-                <v-list-item prepend-icon="mdi-folder-cog-outline" @click="openCollection(item as TreeItem)">
+                <v-list-item
+                  prepend-icon="mdi-folder-cog-outline"
+                  @click="openCollection(item as TreeItem)"
+                >
                   <v-list-item-title>{{ t('collection.open') }}</v-list-item-title>
                 </v-list-item>
                 <v-divider class="my-1" />
@@ -281,7 +312,11 @@ function openRunner(item: TreeItem) {
       :folder-name="folderSettingsTarget?.title ?? ''"
     />
 
-    <CollectionRunnerDialog v-model="runnerOpen" :folder-path="runnerTarget?.id ?? null" :folder-name="runnerTarget?.title ?? ''" />
+    <CollectionRunnerDialog
+      v-model="runnerOpen"
+      :folder-path="runnerTarget?.id ?? null"
+      :folder-name="runnerTarget?.title ?? ''"
+    />
   </SidebarSection>
 </template>
 

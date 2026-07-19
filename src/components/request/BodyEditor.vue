@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ipc } from '@/lib/ipc'
+import type { KeyValueRow } from './KeyValueEditor.vue'
 import { computed, ref, watch } from 'vue'
-import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
+import { ipc } from '@/lib/ipc'
 import AppEmptyState from '../common/AppEmptyState.vue'
-import KeyValueEditor, { type KeyValueRow } from './KeyValueEditor.vue'
+import CodeMirrorEditor from '../common/CodeMirrorEditor.vue'
+import KeyValueEditor from './KeyValueEditor.vue'
 
 type BodyMode = 'none' | 'json' | 'form' | 'multipart' | 'binary' | 'raw'
 type RawLanguage = 'text' | 'javascript' | 'json' | 'html' | 'xml'
@@ -21,6 +22,9 @@ const RADIO_MODES: { value: Exclude<BodyMode, 'json'>; label: string }[] = [
   { value: 'binary', label: 'binary' }
 ]
 
+// raw dili: JSON, dosyaya 'json' modu olarak yazılır; diğerleri yalnızca vurgulama içindir.
+const rawLanguage = ref<RawLanguage>(mode.value === 'json' ? 'json' : 'text')
+
 const radioMode = computed<Exclude<BodyMode, 'json'>>({
   get: () => (mode.value === 'json' ? 'raw' : mode.value),
   set: (value) => {
@@ -28,8 +32,6 @@ const radioMode = computed<Exclude<BodyMode, 'json'>>({
   }
 })
 
-// raw dili: JSON, dosyaya 'json' modu olarak yazılır; diğerleri yalnızca vurgulama içindir.
-const rawLanguage = ref<RawLanguage>(mode.value === 'json' ? 'json' : 'text')
 watch(rawLanguage, (lang) => {
   if (mode.value === 'raw' || mode.value === 'json') mode.value = lang === 'json' ? 'json' : 'raw'
 })
@@ -63,7 +65,8 @@ function serializeRows(list: KeyValueRow[]): string {
 watch(
   mode,
   (current) => {
-    if (current === 'form' || current === 'multipart') rows.value = parseRows(rawContent.value ?? '')
+    if (current === 'form' || current === 'multipart')
+      rows.value = parseRows(rawContent.value ?? '')
   },
   { immediate: true }
 )
@@ -82,15 +85,29 @@ async function chooseFile() {
 }
 
 const showEditor = computed(() => mode.value === 'raw' || mode.value === 'json')
-const editorLanguage = computed<RawLanguage>(() => (mode.value === 'json' ? 'json' : rawLanguage.value))
+const editorLanguage = computed<RawLanguage>(() =>
+  mode.value === 'json' ? 'json' : rawLanguage.value
+)
 </script>
 
 <template>
   <div class="d-flex flex-column h-100">
     <!-- Mod seçimi: Postman benzeri radyo satırı; raw seçiliyken sağda dil menüsü -->
     <div class="d-flex align-center ga-2 px-3 flex-wrap">
-      <v-radio-group v-model="radioMode" inline hide-details density="compact" class="antiphon-body-modes">
-        <v-radio v-for="option in RADIO_MODES" :key="option.value" :value="option.value" :label="option.label" color="primary" />
+      <v-radio-group
+        v-model="radioMode"
+        inline
+        hide-details
+        density="compact"
+        class="antiphon-body-modes"
+      >
+        <v-radio
+          v-for="option in RADIO_MODES"
+          :key="option.value"
+          :value="option.value"
+          :label="option.label"
+          color="primary"
+        />
       </v-radio-group>
       <v-spacer />
       <v-select
@@ -105,7 +122,12 @@ const editorLanguage = computed<RawLanguage>(() => (mode.value === 'json' ? 'jso
     </div>
 
     <!-- raw / json: kod editörü -->
-    <CodeMirrorEditor v-if="showEditor" v-model="content" :language="editorLanguage" class="flex-grow-1" />
+    <CodeMirrorEditor
+      v-if="showEditor"
+      v-model="content"
+      :language="editorLanguage"
+      class="flex-grow-1"
+    />
 
     <!-- form-data / x-www-form-urlencoded: standart key-value tablosu -->
     <div v-else-if="mode === 'form' || mode === 'multipart'" class="pa-3 overflow-y-auto">
@@ -124,12 +146,18 @@ const editorLanguage = computed<RawLanguage>(() => (mode.value === 'json' ? 'jso
           prepend-inner-icon="mdi-file-outline"
           class="antiphon-mono"
         />
-        <v-btn variant="tonal" class="text-none flex-shrink-0" prepend-icon="mdi-paperclip" @click="chooseFile">
+        <v-btn
+          variant="tonal"
+          class="text-none flex-shrink-0"
+          prepend-icon="mdi-paperclip"
+          @click="chooseFile"
+        >
           Dosya Seç
         </v-btn>
       </div>
       <p class="text-caption text-medium-emphasis mt-2">
-        Dosya içeriği istekle birlikte <span class="antiphon-mono">application/octet-stream</span> olarak gönderilir.
+        Dosya içeriği istekle birlikte
+        <span class="antiphon-mono">application/octet-stream</span> olarak gönderilir.
       </p>
     </div>
 

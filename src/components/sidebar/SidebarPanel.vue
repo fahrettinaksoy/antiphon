@@ -2,10 +2,10 @@
 import { computed, ref } from 'vue'
 import { useI18n } from '@/composables/i18n'
 import { useUiStore } from '../../stores/ui'
+import AppEmptyState from '../common/AppEmptyState.vue'
+import HistoryPanel from '../layout/HistoryPanel.vue'
 import CollectionTree from './CollectionTree.vue'
 import EnvironmentsPanel from './EnvironmentsPanel.vue'
-import HistoryPanel from '../layout/HistoryPanel.vue'
-import AppEmptyState from '../common/AppEmptyState.vue'
 import SidebarSection from './SidebarSection.vue'
 
 defineEmits<{ replay: [string] }>()
@@ -39,13 +39,16 @@ function handlePlaceholderAdd() {
   <div class="antiphon-sidebar-panel">
     <CollectionTree v-if="uiStore.activeSidebarSection === 'collections'" />
     <EnvironmentsPanel v-else-if="uiStore.activeSidebarSection === 'environments'" />
-    <HistoryPanel v-else-if="uiStore.activeSidebarSection === 'history'" @replay="$emit('replay', $event)" />
+    <HistoryPanel
+      v-else-if="uiStore.activeSidebarSection === 'history'"
+      @replay="$emit('replay', $event)"
+    />
 
     <SidebarSection
       v-else-if="placeholder"
+      v-model:search="placeholderSearch"
       :title="placeholder.label"
       searchable
-      v-model:search="placeholderSearch"
       :addable="placeholder.addable"
       @add="handlePlaceholderAdd"
     >
